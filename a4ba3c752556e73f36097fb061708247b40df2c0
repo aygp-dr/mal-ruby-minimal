@@ -1,0 +1,64 @@
+Context and Details for Step 4 Implementation
+
+BACKGROUND:
+Step 4 adds core control flow and function definition capabilities.
+This enables user-defined functions and conditional logic.
+
+CHANGES MADE:
+1. step4_if_fn_do.rb:
+   - if special form with proper nil/false falsy semantics
+   - fn* for creating closures (returns Ruby lambdas)
+   - do for sequential evaluation
+   - Extended core functions: comparison operators, list operations
+   - Proper parameter binding for user functions
+
+2. Makefile improvements:
+   - Fixed PHONY declarations (only for non-file targets)
+   - Use  for target names in recipes
+   - Added | docs prerequisite for directory creation
+   - Added examples target
+
+3. examples/ directory:
+   - Makefile with mal-examples and scheme-examples targets
+   - factorial.mal showing recursive and iterative versions
+   - sicp-examples.mal with classic SICP patterns
+   - Guile integration for comparison
+
+4. docs/mal-process-guide.md:
+   - Downloaded official MAL implementation guide
+   - Reference for remaining steps
+
+5. Repository updates:
+   - Added 13 topics for discoverability
+   - Topics include: lisp, scheme, sicp, mal, etc.
+
+TESTING:
+Manual testing confirms:
+- (if (> 2 1) "yes" "no") => "yes"
+- (def! add5 (fn* (x) (+ x 5))) then (add5 7) => 12
+- (do (def! x 6) (def! y 7) (+ x y)) => 13
+- Factorial and SICP examples work correctly
+
+PRECONDITIONS:
+- Step 3 environment support working
+- Reader/printer handling all forms
+
+POSTCONDITIONS:
+- User can define functions with closures
+- Conditional evaluation works
+- Sequential evaluation with do
+- Ready for TCO in step 5
+
+EXPERIMENTS:
+Examples directory serves as experiments for:
+- Recursive patterns (factorial)
+- SICP functional patterns
+- Comparison with Scheme (Guile)
+
+DEVIATIONS:
+Using Ruby lambdas for MAL functions (pragmatic)
+
+FOLLOW-UP:
+1. Create unit tests for step4
+2. Implement step5 with TCO
+3. Test examples with gmake -C examples run
