@@ -19,7 +19,7 @@ class LargeScaleWildAnalysis
   def initialize
     @research_dir = Pathname.new(__dir__) / "research"
     @file_list_path = @research_dir / "mnt-usb-ruby-files.txt"
-    @sample_size = 1000
+    @sample_size = 500  # Reduced for faster completion
     @results = {
       ruby_parser: { nodes: Hash.new(0), files_analyzed: 0 },
       prism_parser: { nodes: Hash.new(0), files_analyzed: 0 }
@@ -54,11 +54,11 @@ class LargeScaleWildAnalysis
     puts "-" * 40
 
     mal_files = [
-      "../step0_repl.rb", "../step1_read_print.rb", "../step2_eval.rb",
-      "../step3_env.rb", "../step4_if_fn_do.rb", "../step5_tco.rb",
-      "../step6_file.rb", "../step7_quote.rb", "../step8_macros.rb", 
-      "../step9_try.rb", "../stepA_mal.rb",
-      "../reader.rb", "../printer.rb", "../env.rb", "../mal_minimal.rb"
+      "../../step0_repl.rb", "../../step1_read_print.rb", "../../step2_eval.rb",
+      "../../step3_env.rb", "../../step4_if_fn_do.rb", "../../step5_tco.rb",
+      "../../step6_file.rb", "../../step7_quote.rb", "../../step8_macros.rb", 
+      "../../step9_try.rb", "../../stepA_mal.rb",
+      "../../reader.rb", "../../printer.rb", "../../env.rb", "../../mal_minimal.rb"
     ]
 
     @mal_baseline = { ruby_parser: Set.new, prism_parser: Set.new }
@@ -130,12 +130,11 @@ class LargeScaleWildAnalysis
   def generate_random_sample
     puts "Generating random sample of #{@sample_size} files..."
     
-    # Use shuf to get random sample (more efficient than loading all into memory)
-    sample_cmd = "shuf -n #{@sample_size} '#{@file_list_path}'"
-    sample_output = `#{sample_cmd}`.strip
+    # FreeBSD doesn't have shuf, use Ruby's sample method instead
+    all_files = File.read(@file_list_path).lines.map(&:strip).reject(&:empty?)
+    sample_files = all_files.sample(@sample_size)
     
-    sample_files = sample_output.lines.map(&:strip).reject(&:empty?)
-    puts "Generated sample of #{sample_files.size} files"
+    puts "Generated sample of #{sample_files.size} files from #{all_files.size} total"
     
     sample_files
   end
