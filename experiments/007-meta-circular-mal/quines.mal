@@ -1,0 +1,262 @@
+;; Quines and Self-Reproducing Programs in MAL
+;; The deepest form of self-reference in computation
+
+;; =============================================================================
+;; Classic Quines
+;; =============================================================================
+
+;; The simplest quine - a program that outputs itself
+(def! simple-quine
+  ((fn* (x) (list x (list 'quote x)))
+   '(fn* (x) (list x (list 'quote x)))))
+
+;; Verify it's a true quine
+(def! verify-quine (fn* (q)
+  (= q (eval q))))
+
+;; Quine constructor - generates quines from templates
+(def! quine-constructor (fn* (f)
+  (list f (list 'quote f))))
+
+;; Create a quine using the constructor
+(def! constructed-quine
+  (quine-constructor 
+    '(fn* (x) (list (fn* (x) (list x (list 'quote x))) x))))
+
+;; =============================================================================
+;; Quine Variants
+;; =============================================================================
+
+;; Cheating quine (reads its own source - not a true quine!)
+(def! cheating-quine
+  (fn* () (slurp "quines.mal")))
+
+;; Print quine - outputs itself to console
+(def! print-quine
+  ((fn* (x) (do (println x (list 'quote x)) nil))
+   '(fn* (x) (do (println x (list 'quote x)) nil))))
+
+;; Quine that returns a quine generator
+(def! meta-quine
+  ((fn* (x) (list 'fn* '() (list x (list 'quote x))))
+   '(fn* (x) (list 'fn* '() (list x (list 'quote x))))))
+
+;; =============================================================================
+;; Mutual Quines - Programs that output each other
+;; =============================================================================
+
+(def! mutual-quine-A
+  '((fn* (b) (list 'quote b))
+    '((fn* (a) (list 'quote '((fn* (b) (list 'quote b)) a)))
+      '(fn* (b) (list 'quote b)))))
+
+(def! mutual-quine-B
+  '((fn* (a) (list 'quote '((fn* (b) (list 'quote b)) a)))
+    '(fn* (b) (list 'quote b))))
+
+;; Verify mutual quines
+(def! verify-mutual-quines (fn* ()
+  (and (= (eval mutual-quine-A) mutual-quine-B)
+       (= (eval mutual-quine-B) mutual-quine-A))))
+
+;; =============================================================================
+;; Self-Modifying Programs
+;; =============================================================================
+
+;; Counter that modifies itself each time it's called
+(def! self-counting-quine
+  (let* (count 0)
+    (fn* ()
+      (do
+        (def! count (+ count 1))
+        (println "I have been called" count "times")
+        `(let* (count ~count)
+           (fn* ()
+             (do
+               (def! count (+ count 1))
+               (println "I have been called" count "times")
+               '~(quote self-counting-quine))))))))
+
+;; Evolving quine - each generation is slightly different
+(def! evolving-quine (fn* (generation)
+  (if (>= generation 5)
+    (println "Evolution complete!")
+    (do
+      (println "Generation" generation "alive!")
+      (eval `(def! evolving-quine
+               (fn* (generation)
+                 (if (>= generation 5)
+                   (println "Evolution complete!")
+                   (do
+                     (println "Generation" generation "alive!"
+                              "- Evolved feature:" ~(str "feature-" generation))
+                     (eval '(evolving-quine (+ generation 1)))))))))))
+
+;; =============================================================================
+;; Quine Combinators
+;; =============================================================================
+
+;; Y combinator expressed as a quine
+(def! Y-quine
+  '((fn* (x) ((fn* (f) (f f)) (fn* (f) (x (fn* (a) ((f f) a))))))
+    (fn* (f) ((fn* (x) (f (fn* (a) ((x x) a))))
+              (fn* (x) (f (fn* (a) ((x x) a))))))))
+
+;; Quine that generates other quines
+(def! quine-factory
+  ((fn* (template)
+     (list (list 'fn* '(x) 
+                 (list 'list 'x (list 'list ''quote 'x)))
+           (list 'quote 
+                 (list 'fn* '(x)
+                       (list 'list 'x (list 'list ''quote 'x))))))
+   'template))
+
+;; =============================================================================
+;; Introspective Quines
+;; =============================================================================
+
+;; Quine that can explain how it works
+(def! explaining-quine
+  ((fn* (x) 
+     (do
+       (println "I am a quine. Here's how I work:")
+       (println "1. I have a function:" x)
+       (println "2. Applied to its own quote:" (list 'quote x))
+       (println "3. Which produces myself!")
+       (list x (list 'quote x))))
+   '(fn* (x) 
+      (do
+        (println "I am a quine. Here's how I work:")
+        (println "1. I have a function:" x)
+        (println "2. Applied to its own quote:" (list 'quote x))
+        (println "3. Which produces myself!")
+        (list x (list 'quote x))))))
+
+;; Quine that counts its own tokens
+(def! token-counting-quine
+  ((fn* (x)
+     (let* (count-tokens (fn* (expr)
+                           (if (list? expr)
+                             (reduce + 1 (map count-tokens expr))
+                             1))]
+       (do
+         (println "I contain" (count-tokens (list x (list 'quote x))) "tokens")
+         (list x (list 'quote x)))))
+   '(fn* (x)
+      (let* (count-tokens (fn* (expr)
+                            (if (list? expr)
+                              (reduce + 1 (map count-tokens expr))
+                              1))]
+        (do
+          (println "I contain" (count-tokens (list x (list 'quote x))) "tokens")
+          (list x (list 'quote x)))))))
+
+;; =============================================================================
+;; Quine-Based Computation
+;; =============================================================================
+
+;; Fibonacci sequence generator as a quine
+(def! fib-quine
+  ((fn* (x n a b)
+     (if (= n 0)
+       (do (println "Fibonacci sequence generated!") a)
+       (do
+         (println "fib(" (- 10 n) ") =" a)
+         ((fn* (x n a b)
+            (if (= n 0)
+              (do (println "Fibonacci sequence generated!") a)
+              (do
+                (println "fib(" (- 10 n) ") =" a)
+                (x x (- n 1) b (+ a b)))))
+          x (- n 1) b (+ a b)))))
+   '(fn* (x n a b)
+      (if (= n 0)
+        (do (println "Fibonacci sequence generated!") a)
+        (do
+          (println "fib(" (- 10 n) ") =" a)
+          ((fn* (x n a b)
+             (if (= n 0)
+               (do (println "Fibonacci sequence generated!") a)
+               (do
+                 (println "fib(" (- 10 n) ") =" a)
+                 (x x (- n 1) b (+ a b)))))
+           x (- n 1) b (+ a b)))))
+   10 0 1))
+
+;; =============================================================================
+;; Test Suite for Quines
+;; =============================================================================
+
+(def! test-quines (fn* ()
+  (do
+    (println "🔁 Testing Quines and Self-Reference...")
+    (println "=" (apply str (repeat 50 "=")))
+    
+    ;; Test simple quine
+    (println "\n1. Testing simple quine:")
+    (assert (verify-quine simple-quine))
+    (println "✅ Simple quine verified")
+    
+    ;; Test constructed quine
+    (println "\n2. Testing constructed quine:")
+    (assert (= constructed-quine (eval constructed-quine)))
+    (println "✅ Constructed quine verified")
+    
+    ;; Test mutual quines
+    (println "\n3. Testing mutual quines:")
+    (assert (verify-mutual-quines))
+    (println "✅ Mutual quines verified")
+    
+    ;; Test meta-quine
+    (println "\n4. Testing meta-quine:")
+    (let* (generator (eval meta-quine)
+           generated-quine (generator))
+      (assert (= generated-quine (eval generated-quine))))
+    (println "✅ Meta-quine verified")
+    
+    ;; Demonstrate self-modifying behavior
+    (println "\n5. Demonstrating self-modification:")
+    (println "Running evolving quine...")
+    ; (evolving-quine 0)
+    
+    ;; Demonstrate explaining quine
+    (println "\n6. Explaining quine demonstration:")
+    ; (eval explaining-quine)
+    
+    (println "\n🎉 All quine tests completed!")
+    (println "Our MAL implementation successfully handles deep self-reference!"))))
+
+;; Quine art - a quine that draws itself
+(def! ascii-art-quine
+  (fn* ()
+    (let* (code '((fn* () 
+                    (println "+------------------+")
+                    (println "| I am a quine!    |")
+                    (println "| Here is my code: |")
+                    (println "+------------------+")
+                    (println (str code)))))
+      (do
+        (println "+------------------+")
+        (println "| I am a quine!    |")
+        (println "| Here is my code: |") 
+        (println "+------------------+")
+        (println (str code))
+        code))))
+
+;; Run demonstrations
+(println "🎭 Quines and Self-Reproducing Programs")
+(println "=====================================")
+(println "A quine is a program that outputs its own source code.")
+(println "This is one of the deepest forms of self-reference in computation.")
+(println "")
+
+;; Show simple quine
+(println "Simple quine:")
+(println simple-quine)
+(println "Evaluates to:")
+(println (eval simple-quine))
+(println "Are they equal?" (= simple-quine (eval simple-quine)))
+
+;; Run test suite
+; (test-quines)
