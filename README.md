@@ -464,6 +464,14 @@ Comprehensive documentation is available in the [`docs/`](docs/) directory:
 - **[Assessment Rubric](docs/assessment-rubric.md)** - For educators
 - **[Project Reflection](docs/project-reflection.md)** - Lessons learned
 
+## Development Environment
+
+The complete MAL development workflow with integrated editor, REPL, and testing:
+
+![MAL Development Environment](screenshots/mal-development-environment.png)
+
+*Tmux-based development setup showing: Emacs with mal-mode (left), interactive MAL REPL (top-right), and project status (bottom-right)*
+
 ## License
 
 MIT
