@@ -1,0 +1,20 @@
+;; Fibonacci sequence generator
+(def! fib (fn* (n)
+  (if (<= n 1)
+    n
+    (+ (fib (- n 1)) 
+       (fib (- n 2))))))
+
+;; Test the function
+(print "fib(5) = ")
+(print (fib 5))
+(print "\n")
+
+;; List of first 10 fibonacci numbers
+(def! fib-list (fn* (n)
+  (if (= n 0)
+    '()
+    (cons (fib n) (fib-list (- n 1))))))
+
+(print "First 5 fibs: ")
+(print (reverse (fib-list 5)))

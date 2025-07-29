@@ -1,0 +1,29 @@
+;; Simple test file for mal_minimal.rb
+;; Uses only the built-in functions available
+
+;; Test arithmetic
+(print (+ 1 2))
+(print (* 3 4))
+(print (- 10 5))
+(print (/ 20 4))
+
+;; Test lists
+(print (list 1 2 3))
+(print (car (list 1 2 3)))
+(print (cdr (list 1 2 3)))
+(print (cons 0 (list 1 2 3)))
+
+;; Test comparisons
+(print (= 5 5))
+(print (< 3 5))
+(print (> 7 4))
+
+;; Test definitions and functions
+(def! square (fn* (x) (* x x)))
+(print (square 5))
+
+(def! fact (fn* (n) 
+  (if (= n 0) 
+    1 
+    (* n (fact (- n 1))))))
+(print (fact 5))

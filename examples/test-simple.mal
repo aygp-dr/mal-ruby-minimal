@@ -1,0 +1,4 @@
+;; Simple MAL test file
+(def! x 42)
+(print "Hello from MAL!")
+(+ x 8)
