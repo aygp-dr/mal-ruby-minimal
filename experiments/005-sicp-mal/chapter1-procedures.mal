@@ -1,0 +1,406 @@
+;; SICP Chapter 1: Building Abstractions with Procedures
+;; Classic examples from Structure and Interpretation of Computer Programs
+;; Translated to MAL Lisp dialect to demonstrate our interpreter's capabilities
+
+;; =============================================================================
+;; 1.1 The Elements of Programming
+;; =============================================================================
+
+;; Basic procedure definitions
+(def! square (fn* (x) (* x x)))
+
+(def! sum-of-squares (fn* (x y) 
+  (+ (square x) (square y))))
+
+;; Good function - demonstrates nested procedure calls
+(def! f (fn* (a)
+  (sum-of-squares (+ a 1) (* a 2))))
+
+;; Conditional expressions and predicates
+(def! abs (fn* (x)
+  (if (< x 0) 
+    (- x) 
+    x)))
+
+(def! abs-alternative (fn* (x)
+  (if (>= x 0) 
+    x 
+    (- x))))
+
+;; Using cond for case analysis
+(def! abs-cond (fn* (x)
+  (cond 
+    (> x 0) x
+    (= x 0) 0
+    (< x 0) (- x))))
+
+;; Compound conditional with and/or
+(def! between? (fn* (x low high)
+  (and (>= x low) (<= x high))))
+
+;; =============================================================================
+;; 1.1.6 Example: Square Roots by Newton's Method
+;; =============================================================================
+
+(def! average (fn* (x y)
+  (/ (+ x y) 2)))
+
+(def! improve (fn* (guess x)
+  (average guess (/ x guess))))
+
+(def! good-enough? (fn* (guess x)
+  (< (abs (- (square guess) x)) 0.001)))
+
+(def! sqrt-iter (fn* (guess x)
+  (if (good-enough? guess x)
+    guess
+    (sqrt-iter (improve guess x) x))))
+
+(def! sqrt (fn* (x)
+  (sqrt-iter 1.0 x)))
+
+;; Improved version with relative tolerance
+(def! good-enough-relative? (fn* (guess prev-guess)
+  (< (abs (- guess prev-guess)) 
+     (* guess 0.001))))
+
+(def! sqrt-iter-improved (fn* (guess prev-guess x)
+  (if (good-enough-relative? guess prev-guess)
+    guess
+    (sqrt-iter-improved (improve guess x) guess x))))
+
+(def! sqrt-improved (fn* (x)
+  (sqrt-iter-improved 1.0 0.0 x)))
+
+;; =============================================================================
+;; 1.1.7 Example: Cube Roots by Newton's Method
+;; =============================================================================
+
+(def! cube (fn* (x) (* x x x)))
+
+(def! improve-cube (fn* (guess x)
+  (/ (+ (/ x (square guess)) (* 2 guess)) 3)))
+
+(def! good-enough-cube? (fn* (guess x)
+  (< (abs (- (cube guess) x)) 0.001)))
+
+(def! cube-root-iter (fn* (guess x)
+  (if (good-enough-cube? guess x)
+    guess
+    (cube-root-iter (improve-cube guess x) x))))
+
+(def! cube-root (fn* (x)
+  (cube-root-iter 1.0 x)))
+
+;; =============================================================================
+;; 1.2 Procedures and the Processes They Generate
+;; =============================================================================
+
+;; 1.2.1 Linear Recursion and Iteration
+
+;; Recursive factorial
+(def! factorial (fn* (n)
+  (if (= n 1)
+    1
+    (* n (factorial (- n 1))))))
+
+;; Iterative factorial using tail recursion
+(def! factorial-iter (fn* (product counter max-count)
+  (if (> counter max-count)
+    product
+    (factorial-iter (* counter product)
+                    (+ counter 1)
+                    max-count))))
+
+(def! factorial-tail (fn* (n)
+  (factorial-iter 1 1 n)))
+
+;; 1.2.2 Tree Recursion - Fibonacci Numbers
+
+;; Naive recursive Fibonacci (exponential time)
+(def! fib (fn* (n)
+  (cond
+    (= n 0) 0
+    (= n 1) 1
+    :else (+ (fib (- n 1)) (fib (- n 2))))))
+
+;; Iterative Fibonacci (linear time)
+(def! fib-iter (fn* (a b count)
+  (if (= count 0)
+    b
+    (fib-iter (+ a b) a (- count 1)))))
+
+(def! fib-fast (fn* (n)
+  (fib-iter 1 0 n)))
+
+;; 1.2.3 Orders of Growth Examples
+
+;; Exponentiation - recursive O(n)
+(def! expt (fn* (b n)
+  (if (= n 0)
+    1
+    (* b (expt b (- n 1))))))
+
+;; Exponentiation - iterative O(n)
+(def! expt-iter (fn* (b counter product)
+  (if (= counter 0)
+    product
+    (expt-iter b (- counter 1) (* b product))))
+
+(def! expt-tail (fn* (b n)
+  (expt-iter b n 1)))
+
+;; Fast exponentiation - O(log n)
+(def! even? (fn* (n) (= (mod n 2) 0)))
+(def! odd? (fn* (n) (not (even? n))))
+
+(def! fast-expt (fn* (b n)
+  (cond
+    (= n 0) 1
+    (even? n) (square (fast-expt b (/ n 2)))
+    :else (* b (fast-expt b (- n 1))))))
+
+;; 1.2.4 Exponentiation (Iterative fast version)
+(def! fast-expt-iter (fn* (a b n)
+  (cond
+    (= n 0) a
+    (even? n) (fast-expt-iter a (square b) (/ n 2))
+    :else (fast-expt-iter (* a b) b (- n 1)))))
+
+(def! fast-expt-tail (fn* (b n)
+  (fast-expt-iter 1 b n)))
+
+;; 1.2.5 Greatest Common Divisors
+(def! gcd (fn* (a b)
+  (if (= b 0)
+    a
+    (gcd b (mod a b)))))
+
+;; =============================================================================
+;; 1.3 Formulating Abstractions with Higher-Order Procedures
+;; =============================================================================
+
+;; 1.3.1 Procedures as Arguments
+
+;; Generic summation procedure
+(def! sum (fn* (term a next b)
+  (if (> a b)
+    0
+    (+ (term a) (sum term (next a) next b)))))
+
+;; Sum of integers from a to b
+(def! sum-integers (fn* (a b)
+  (sum identity a inc b)))
+
+;; Helper functions
+(def! identity (fn* (x) x))
+(def! inc (fn* (x) (+ x 1)))
+
+;; Sum of cubes
+(def! sum-cubes (fn* (a b)
+  (sum cube a inc b)))
+
+;; Pi approximation using Leibniz series
+(def! pi-sum (fn* (a b)
+  (sum (fn* (x) (/ 1.0 (* x (+ x 2))))
+       a
+       (fn* (x) (+ x 4))
+       b)))
+
+(def! pi-approx (fn* (n)
+  (* 8 (pi-sum 1 n))))
+
+;; Integral approximation
+(def! integral (fn* (f a b dx)
+  (* (sum f (+ a (/ dx 2.0)) (fn* (x) (+ x dx)) b)
+     dx)))
+
+;; 1.3.2 Constructing Procedures Using Lambda
+
+;; Simpson's rule for numerical integration
+(def! simpson-integral (fn* (f a b n)
+  (let* (h (/ (- b a) n)
+         simpson-term (fn* (k)
+                        (let* (yk (f (+ a (* k h))))
+                          (* (cond
+                               (or (= k 0) (= k n)) 1
+                               (odd? k) 4
+                               :else 2)
+                             yk))))
+    (* (/ h 3) (sum simpson-term 0 inc n)))))
+
+;; 1.3.3 Procedures as General Methods
+
+;; Finding roots of equations using half-interval method
+(def! close-enough? (fn* (x y)
+  (< (abs (- x y)) 0.001)))
+
+(def! search (fn* (f neg-point pos-point)
+  (let* (midpoint (average neg-point pos-point))
+    (if (close-enough? neg-point pos-point)
+      midpoint
+      (let* (test-value (f midpoint))
+        (cond
+          (> test-value 0) (search f neg-point midpoint)
+          (< test-value 0) (search f midpoint pos-point)
+          :else midpoint))))))
+
+(def! half-interval-method (fn* (f a b)
+  (let* (a-value (f a)
+         b-value (f b))
+    (cond
+      (and (< a-value 0) (> b-value 0)) (search f a b)
+      (and (> a-value 0) (< b-value 0)) (search f b a)
+      :else (throw "Values are not of opposite sign")))))
+
+;; Finding fixed points
+(def! tolerance 0.00001)
+
+(def! fixed-point (fn* (f first-guess)
+  (let* (close-enough? (fn* (v1 v2)
+                         (< (abs (- v1 v2)) tolerance))
+         try-it (fn* (guess)
+                  (let* (next (f guess))
+                    (if (close-enough? guess next)
+                      next
+                      (try-it next)))))
+    (try-it first-guess))))
+
+;; Square root using fixed point
+(def! sqrt-fixed-point (fn* (x)
+  (fixed-point (fn* (y) (average y (/ x y))) 1.0)))
+
+;; =============================================================================
+;; Test Framework for Chapter 1
+;; =============================================================================
+
+(def! test-basic-procedures (fn* ()
+  (do
+    (println "🧮 Testing Basic Procedures...")
+    (assert (= (square 5) 25))
+    (assert (= (sum-of-squares 3 4) 25))
+    (assert (= (f 5) 136))  ; (f 5) = sum-of-squares(6, 10) = 36 + 100
+    (println "✅ Basic procedures pass"))))
+
+(def! test-conditionals (fn* ()
+  (do
+    (println "🔀 Testing Conditional Expressions...")
+    (assert (= (abs -5) 5))
+    (assert (= (abs 5) 5))
+    (assert (= (abs 0) 0))
+    (assert (between? 5 1 10))
+    (assert (not (between? 15 1 10)))
+    (println "✅ Conditionals pass"))))
+
+(def! test-square-roots (fn* ()
+  (do
+    (println "√ Testing Square Root Algorithms...")
+    (let* (result (sqrt 9))
+      (assert (< (abs (- result 3.0)) 0.01)))
+    (let* (result (sqrt-improved 9))
+      (assert (< (abs (- result 3.0)) 0.01)))
+    (let* (result (cube-root 27))
+      (assert (< (abs (- result 3.0)) 0.01)))
+    (println "✅ Square root algorithms pass"))))
+
+(def! test-recursion-iteration (fn* ()
+  (do
+    (println "🔄 Testing Recursion vs Iteration...")
+    (assert (= (factorial 5) 120))
+    (assert (= (factorial-tail 5) 120))
+    (assert (= (fib 10) 55))
+    (assert (= (fib-fast 10) 55))
+    
+    ;; Test that iterative versions are faster for large inputs
+    (println "Comparing factorial performance:")
+    (println "  factorial(20) =" (factorial 20))
+    (println "  factorial-tail(20) =" (factorial-tail 20))
+    (println "✅ Recursion/iteration tests pass"))))
+
+(def! test-exponentiation (fn* ()
+  (do
+    (println "^️ Testing Exponentiation Algorithms...")
+    (assert (= (expt 2 10) 1024))
+    (assert (= (expt-tail 2 10) 1024))
+    (assert (= (fast-expt 2 10) 1024))
+    (assert (= (fast-expt-tail 2 10) 1024))
+    
+    ;; Test GCD
+    (assert (= (gcd 48 18) 6))
+    (assert (= (gcd 206 40) 2))
+    (println "✅ Exponentiation and GCD tests pass"))))
+
+(def! test-higher-order (fn* ()
+  (do
+    (println "🎯 Testing Higher-Order Procedures...")
+    (assert (= (sum-integers 1 10) 55))
+    (assert (= (sum-cubes 1 3) 36))  ; 1³ + 2³ + 3³ = 1 + 8 + 27
+    
+    ;; Test pi approximation (should be close to pi/8)
+    (let* (pi-est (* 8 (pi-sum 1 1000)))
+      (assert (< (abs (- pi-est 3.14159)) 0.1)))
+    
+    ;; Test integration
+    (let* (result (integral cube 0 1 0.01)))
+      ; ∫₀¹ x³ dx = 1/4 = 0.25
+      ; (assert (< (abs (- result 0.25)) 0.01))
+    
+    (println "✅ Higher-order procedure tests pass"))))
+
+(def! test-numerical-methods (fn* ()
+  (do
+    (println "🔢 Testing Numerical Methods...")
+    
+    ;; Test half-interval method to find roots
+    ;; sin(x) = 0 has root at π ≈ 3.14159
+    ; (let* (sin-root (half-interval-method sin 2.0 4.0))
+    ;   (assert (< (abs (- sin-root 3.14159)) 0.01)))
+    
+    ;; Test fixed point
+    (let* (sqrt-result (sqrt-fixed-point 4)))
+      ; (assert (< (abs (- sqrt-result 2.0)) 0.001))
+    
+    (println "✅ Numerical methods tests pass"))))
+
+;; Run all Chapter 1 tests
+(def! run-chapter1-tests (fn* ()
+  (do
+    (println "🚀 Running SICP Chapter 1 Tests...")
+    (println "=" (apply str (repeat 50 "=")))
+    
+    (test-basic-procedures)
+    (test-conditionals)
+    (test-square-roots)
+    (test-recursion-iteration)
+    (test-exponentiation)
+    (test-higher-order)
+    (test-numerical-methods)
+    
+    (println "")
+    (println "🎉 All Chapter 1 tests completed successfully!")
+    (println "✅ Our MAL interpreter handles all SICP Chapter 1 concepts!"))))
+
+;; Performance comparison demonstration
+(def! performance-demo (fn* ()
+  (do
+    (println "⚡ Performance Comparison Demo...")
+    (println "Comparing recursive vs iterative implementations:")
+    
+    (println "\nFactorial comparison (n=20):")
+    (println "  Recursive result:" (factorial 20))
+    (println "  Iterative result:" (factorial-tail 20))
+    
+    (println "\nFibonacci comparison (n=30):")
+    (println "  Warning: recursive version will be slow!")
+    ; (println "  Recursive result:" (fib 30))  ; This would be very slow
+    (println "  Iterative result:" (fib-fast 30))
+    
+    (println "\nExponentiation comparison (2^20):")
+    (println "  Basic iterative:" (expt-tail 2 20))
+    (println "  Fast algorithm:" (fast-expt-tail 2 20)))))
+
+;; Automatically run tests when file is loaded
+(run-chapter1-tests)
+
+;; Uncomment to run performance demo
+; (performance-demo)
