@@ -1,0 +1,15 @@
+Fixed org-babel tangling for experiments 005 and 006.
+
+Technical details:
+- SETUP.org files use literate programming to combine documentation and code
+- org-babel-tangle extracts code blocks to files specified by :tangle headers
+- Previous paths used subdirectories (sicp/) that didn't match actual structure
+- Now uses relative paths (./) to create files in experiment directories
+- Makefile targets run emacs in batch mode to perform tangling
+- This enables regenerating all MAL files from the org documentation
+
+The tangling process works by:
+1. emacs loads the SETUP.org file
+2. org-babel-tangle-file extracts all code blocks
+3. Files are created according to :tangle headers
+4. Makefile provides convenient gmake tangle interface
