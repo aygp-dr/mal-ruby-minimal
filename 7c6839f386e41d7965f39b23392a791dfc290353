@@ -1,0 +1,33 @@
+Created comprehensive MAL examples demonstrating advanced capabilities:
+
+1. algorithms.mal:
+   - Sorting: bubble sort, quicksort, merge sort
+   - Searching: linear and binary search
+   - Math: GCD, LCM, prime checking, sieve of Eratosthenes
+   - String: palindrome checking
+   - All implemented using only cons cells and recursion
+
+2. data-structures.mal:
+   - Stack and Queue using atoms for mutation
+   - Binary Search Tree with insert/search/traversal
+   - Association lists as key-value stores
+   - Graph representation with DFS traversal
+   - Shows how complex structures emerge from simple pairs
+
+3. functional-patterns.mal:
+   - Function composition and pipelines
+   - Partial application and currying
+   - Maybe and Either monads for error handling
+   - Lazy evaluation with thunks
+   - Memoization for performance
+   - Transducers for composable transformations
+   - Y combinator for anonymous recursion
+
+Also fixed mal-mode.el:
+- Updated tangle paths to avoid overwriting other files
+- Successfully tangled and tested with emacs
+- Provides syntax highlighting, indentation, paredit support
+- REPL integration for interactive development
+
+These examples prove that extreme constraints (no arrays/hashes/blocks)
+don't limit expressiveness - they force elegant solutions.
