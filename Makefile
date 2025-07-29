@@ -1,4 +1,4 @@
-.PHONY: all help deps run repl tmux-repl lint test test-unit test-integration test-coverage test-emacs check-constraints clean push push-all gh-info gh-workflows gh-secrets examples mal-deps
+.PHONY: all help deps run repl tmux-repl lint test test-unit test-integration test-coverage test-emacs check-constraints clean push push-all gh-info gh-workflows gh-secrets examples mal-deps presentation
 
 # Default target
 all: help
@@ -14,6 +14,7 @@ help:
 	@echo "  make lint             - Run code quality checks"
 	@echo "  make push-all         - Test, lint, commit, and push"
 	@echo "  make mal-deps         - Download MAL-in-MAL dependencies"
+	@echo "  make presentation     - Generate Architecture Guild presentation PDF"
 	@echo ""
 	@echo "Testing targets:"
 	@echo "  make test-unit        - Run unit tests"
@@ -34,6 +35,10 @@ help:
 	@echo "  make gh-secrets       - List GitHub secrets"
 	@echo ""
 	@echo "  make help             - Show this help"
+	@echo ""
+	@echo "Resource targets:"
+	@echo "  make resources/images/repo-qr.png - Generate QR code PNG"
+	@echo "  make resources/images/repo-qr.txt - Generate UTF8 QR code"
 
 deps:
 	@echo "Checking system dependencies..."
@@ -225,6 +230,17 @@ resources:
 resources/banner.txt: | resources
 	@echo "Banner file exists at $@"
 
+# QR code for repository
+resources/images/repo-qr.png: | resources
+	@install -d resources/images
+	@qrencode -o $@ "https://github.com/aygp-dr/mal-ruby-minimal"
+	@echo "Generated QR code: $@"
+
+resources/images/repo-qr.txt: | resources
+	@install -d resources/images
+	@qrencode -t utf8 "https://github.com/aygp-dr/mal-ruby-minimal" > $@
+	@echo "Generated UTF8 QR code: $@"
+
 # Push commits, notes, and tags to GitHub
 push:
 	@echo "Pushing commits to GitHub..."
@@ -271,6 +287,10 @@ gh-secrets:
 	else \
 		echo "No secrets found or insufficient permissions"; \
 	fi
+
+# Generate presentation PDF
+presentation:
+	@$(MAKE) -C presentation pdf
 
 # Combined workflow: test, lint, commit, and push
 push-all: test lint
