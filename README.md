@@ -15,21 +15,21 @@ A minimal implementation of MAL (Make a Lisp) in Ruby using only 13 AST node typ
 ║                    MAL - Make a Lisp (Ruby Minimal)               ║
 ║                                                                   ║
 ║  A pedagogical Lisp interpreter built with only cons cells        ║
-║  No arrays, no hashes, no blocks - just pairs all the way down   ║
+║  No arrays, no hashes, no blocks - just pairs all the way down    ║
 ║                                                                   ║
-║  Type expressions at the prompt. Some examples:                  ║
-║    (+ 1 2 3)                    ; => 6                           ║
-║    (def! fact                   ; Define recursive factorial     ║
-║      (fn* (n)                                                    ║
-║        (if (= n 0)                                               ║
-║          1                                                       ║
-║          (* n (fact (- n 1))))))                                 ║
-║    (fact 5)                     ; => 120                         ║
+║  Type expressions at the prompt. Some examples:                   ║
+║    (+ 1 2 3)                    ; => 6                            ║
+║    (def! fact                   ; Define recursive factorial      ║
+║      (fn* (n)                                                     ║
+║        (if (= n 0)                                                ║
+║          1                                                        ║
+║          (* n (fact (- n 1))))))                                  ║
+║    (fact 5)                     ; => 120                          ║
 ║                                                                   ║
-║  Special forms: def! let* if fn* do quote                       ║
-║  Built-ins: + - * / = < > <= >= list list? empty? count not     ║
+║  Special forms: def! let* if fn* do quote                         ║
+║  Built-ins: + - * / = < > <= >= list list? empty? count not       ║
 ║                                                                   ║
-║  Press Ctrl-D to exit                                            ║
+║  Press Ctrl-D to exit                                             ║
 ╚═══════════════════════════════════════════════════════════════════╝
 
 > (def! fact (fn* (n) (if (= n 0) 1 (* n (fact (- n 1))))))
