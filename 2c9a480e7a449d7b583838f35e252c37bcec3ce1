@@ -1,0 +1,26 @@
+WHY: Students benefit from immediate visual feedback about what makes this
+implementation special. The banner explains constraints upfront.
+
+CONTEXT: During pedagogical review pass 4, realized students need clear
+visual indicators of the implementation's unique characteristics.
+
+IMPLEMENTATION:
+- ASCII art banner in resources/banner.txt
+- Conditional loading in mal_minimal.rb
+- Screenshot showing actual REPL interaction with factorial
+
+TESTING:
+- Manually tested with make tmux-repl
+- Captured actual session output
+- Verified banner displays correctly
+
+PEDAGOGICAL VALUE:
+- Immediate visual impact
+- Clear statement of constraints
+- Working example in the banner
+- Real REPL session in README
+
+INTEGRATION:
+- Falls back gracefully if banner missing
+- Doesn't break existing tests
+- New tmux-repl target for demos
