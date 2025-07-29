@@ -1,0 +1,42 @@
+Context and Details for Reader Module Implementation
+
+BACKGROUND:
+Implementing the reader/parser for MAL without using Ruby arrays, hashes, or blocks.
+This is the foundation for parsing S-expressions into AST nodes.
+
+CHANGES MADE:
+1. Cons cell implementation for all data structures
+2. Tokenizer that handles:
+   - Parentheses, brackets, braces
+   - Strings with escape sequences
+   - Comments (;)
+   - Special reader macros (', `, ~, ~@, ^, @)
+   - Numbers, symbols, keywords
+3. Reader class to track position in token stream
+4. Recursive descent parser for forms
+5. Type constructors for symbols, keywords, vectors, hash-maps
+
+TESTING:
+Need to create expect-based integration tests for:
+- Tokenization of various inputs
+- Parsing of lists, vectors, hash-maps
+- Reader macro expansion
+- Error cases (unmatched parens, etc.)
+
+PRECONDITIONS:
+- Only cons cells for data structures
+- No Ruby arrays, hashes, or blocks allowed
+
+POSTCONDITIONS:
+- Can parse any valid MAL expression
+- Returns AST built from cons cells
+- Handles all reader macros
+
+DEVIATIONS:
+- Using Object.new with eval for custom types (symbols, vectors, etc.)
+- String slicing instead of array indexing
+
+FOLLOW-UP:
+1. Create expect tests for reader
+2. Implement printer module
+3. Integrate with step1_read_print.rb
