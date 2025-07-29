@@ -1,0 +1,18 @@
+WHY: The previous linear diagram looked like a simple ordered list and didn't convey the architectural relationships between components.
+
+CONTEXT: For pedagogical purposes, we need to show:
+1. How the REPL components interact (sequence diagram)
+2. The logical grouping of implementation steps (foundation, features, advanced)
+3. The flow of data through the system
+
+CHANGES:
+- Added sequence diagram showing a complete REPL cycle for '(+ 1 2)'
+- Grouped steps into three phases: Core Foundation, Language Features, Advanced
+- Shows the actual interaction between Reader, Evaluator, Printer, and Environment
+
+TESTING:
+- Visual inspection in GitHub/GitLab markdown renderer
+- Mermaid diagram validation at mermaid.live
+- Ensures educational clarity for students
+
+IMPACT: Students can now see both the high-level architecture and the implementation progression, making it easier to understand how the pieces fit together.
