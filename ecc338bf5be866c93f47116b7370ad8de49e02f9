@@ -1,0 +1,50 @@
+Context and Details for Step 1 Read/Print Implementation
+
+BACKGROUND:
+Following MAL guide and SICP principles for symbolic expression handling.
+Step 1 adds parsing (READ) and printing (PRINT) to create a full read-print loop.
+
+CHANGES MADE:
+1. printer.rb module:
+   - pr_str function for converting AST to strings
+   - Handles all MAL types (lists, vectors, hash-maps, strings, etc.)
+   - Escape sequence handling for strings
+   - SICP-style recursive list printing
+
+2. step1_read_print.rb:
+   - Integrates reader and printer modules
+   - Error handling for parse errors
+   - Full REPL with parsing and printing
+
+3. test_step1.exp:
+   - Expect-based integration tests
+   - Tests all data types and reader macros
+   - Error case testing
+
+TESTING:
+Expect tests verify:
+- Number parsing (positive/negative)
+- Symbol parsing
+- List/vector/hash-map parsing
+- String parsing with escapes
+- Special forms (nil, true, false)
+- Reader macros (', `, ~, ~@)
+- Parse error handling
+
+PRECONDITIONS:
+- reader.rb and printer.rb modules available
+- No Ruby arrays/hashes/blocks constraint maintained
+
+POSTCONDITIONS:
+- Can parse any MAL expression and print it back
+- Round-trip property: parse(print(ast)) == ast
+- Proper error messages for malformed input
+
+DEVIATIONS:
+- Using expect for testing (as suggested by user)
+- Following SICP naming conventions
+
+FOLLOW-UP:
+1. Run expect tests to verify implementation
+2. Create GitHub repository
+3. Implement step2_eval with basic arithmetic
