@@ -1,0 +1,31 @@
+;; Simple test file for Emacs integration
+;; Load this file to verify the MAL REPL is working
+
+;; Define a greeting function
+(def! greet (fn* (name)
+  (str "Hello, " name "!")))
+
+;; Test basic arithmetic
+(def! x 10)
+(def! y 20)
+(println "Basic math: " x " + " y " = " (+ x y))
+
+;; Test the greeting
+(println (greet "Emacs"))
+
+;; Test list operations
+(def! numbers (list 1 2 3 4 5))
+(println "Numbers: " numbers)
+
+;; Define map if not already defined
+(def! map (fn* (f lst)
+  (if (empty? lst)
+    nil
+    (cons (f (car lst)) (map f (cdr lst))))))
+
+;; Test map
+(def! doubled (map (fn* (n) (* n 2)) numbers))
+(println "Doubled: " doubled)
+
+;; Return success message
+"Emacs test loaded successfully!"

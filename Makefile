@@ -1,4 +1,4 @@
-.PHONY: all help deps run lint test test-unit test-integration test-coverage check-constraints clean push push-all gh-info gh-workflows gh-secrets examples
+.PHONY: all help deps run lint test test-unit test-integration test-coverage test-emacs check-constraints clean push push-all gh-info gh-workflows gh-secrets examples
 
 # Default target
 all: help
@@ -16,6 +16,7 @@ help:
 	@echo "  make test-unit        - Run unit tests"
 	@echo "  make test-integration - Run integration tests"
 	@echo "  make test-coverage    - Run tests with code coverage"
+	@echo "  make test-emacs       - Test Emacs integration"
 	@echo ""
 	@echo "Development targets:"
 	@echo "  make deps             - Check system dependencies"
@@ -41,11 +42,16 @@ deps:
 	@git --version || (echo "ERROR: Git not found"; exit 1)
 	@echo -n "GitHub CLI: "
 	@gh --version || echo "WARNING: GitHub CLI not found (needed for issue tracking)"
+	@echo -n "Ruby LSP: "
+	@which ruby-lsp > /dev/null && echo "Found (version: $$(ruby-lsp --version 2>/dev/null || echo 'unknown'))" || echo "WARNING: ruby-lsp not found (run ./setup-ruby-lsp.sh)"
 	@echo ""
 	@echo "Ruby version check:"
 	@ruby -e 'exit 1 if RUBY_VERSION < "3.0"' && echo "✓ Ruby 3.0+ detected" || (echo "✗ Ruby 3.0+ required"; exit 1)
 	@echo ""
 	@echo "All required dependencies satisfied!"
+	@echo ""
+	@echo "For development setup with Ruby LSP:"
+	@echo "  ./setup-ruby-lsp.sh"
 
 run:
 	@echo "Starting MAL REPL..."
@@ -91,6 +97,44 @@ test-coverage:
 	@COVERAGE=1 ruby test/run_all_tests.rb
 	@echo ""
 	@echo "Coverage report: coverage/index.html"
+
+test-emacs:
+	@echo "Testing Emacs integration..."
+	@echo ""
+	@echo "This will:"
+	@echo "1. Start Emacs with mal-ruby-minimal.el"
+	@echo "2. Open examples/emacs-test.mal"
+	@echo "3. Start MAL REPL"
+	@echo "4. Load the test file"
+	@echo ""
+	@if which emacs > /dev/null; then \
+		if which tmux > /dev/null; then \
+			echo "Starting Emacs in tmux session..."; \
+			tmux new-session -d -s mal-emacs || true; \
+			tmux send-keys -t mal-emacs "cd $(shell pwd)" C-m; \
+			tmux send-keys -t mal-emacs "timeout 30 emacs -nw -l mal-ruby-minimal.el --eval '(mal-ruby-test-setup)'" C-m; \
+			echo ""; \
+			echo "Emacs started in tmux session 'mal-emacs'"; \
+			echo "To attach: tmux attach -t mal-emacs"; \
+			echo "To check if Ruby LSP is running: ps aux | grep ruby-lsp"; \
+			echo ""; \
+			sleep 5; \
+			if tmux capture-pane -t mal-emacs -p | grep -q "MAL Ruby test setup complete"; then \
+				echo "✓ Emacs integration test passed!"; \
+			else \
+				echo "✗ Emacs integration test failed or timed out"; \
+				echo "Debug output:"; \
+				tmux capture-pane -t mal-emacs -p | tail -20; \
+			fi; \
+		else \
+			echo "Starting Emacs without tmux..."; \
+			timeout 10 emacs -batch -l mal-ruby-minimal.el --eval '(message "MAL Ruby Minimal loaded successfully")' && \
+			echo "✓ Emacs config loads successfully" || \
+			echo "✗ Emacs config failed to load"; \
+		fi \
+	else \
+		echo "SKIP: Emacs not installed"; \
+	fi
 
 check-constraints:
 	@echo "Checking for forbidden Ruby constructs..."
