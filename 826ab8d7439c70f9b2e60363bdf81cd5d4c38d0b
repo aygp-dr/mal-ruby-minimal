@@ -1,0 +1,22 @@
+WHY: Students need detailed explanations to understand the non-obvious aspects of the implementation.
+
+CONTEXT: Pass 3 of pedagogical review focuses on inline documentation and visual explanations. Many concepts (cons cells, environments, evaluation) are abstract and benefit from visualization.
+
+CHANGES:
+- Created reader_commented.rb with extensive inline documentation
+- Created env_commented.rb explaining lexical scoping and environments
+- Added evaluation-walkthrough.md tracing through concrete examples
+- Added cons-cell-visualizations.md with ASCII art diagrams
+
+TESTING:
+- Documentation is in markdown/ruby comments
+- ASCII art tested for alignment
+- Code examples verified against implementation
+
+IMPACT: Students can now:
+- See visual representations of abstract concepts
+- Trace through evaluation step by step
+- Understand the 'why' behind implementation choices
+- Work through exercises to deepen understanding
+
+FUTURE: Consider interactive visualizations or animations for complex operations like TCO.
