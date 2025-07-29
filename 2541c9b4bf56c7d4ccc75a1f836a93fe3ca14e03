@@ -1,0 +1,37 @@
+WHY: Exception handling is crucial for robust programs. It allows
+graceful error recovery and better error reporting.
+
+CONTEXT: Step 9 adds try/catch support, enabling MAL programs to handle
+errors without crashing the interpreter.
+
+IMPLEMENTATION:
+- Custom MalException class wraps MAL values as exceptions
+- try* special form with begin/rescue blocks
+- catch* clause binds exception to symbol
+- throw function raises MalException
+- Handles both MAL and Ruby exceptions
+
+TESTING:
+- 21 tests covering all exception scenarios
+- Tests throw/catch, nested try, re-throw
+- Tests integration with macros
+- All tests pass
+
+PEDAGOGICAL VALUE:
+- Shows how to add exception handling to a language
+- Demonstrates wrapping host language exceptions
+- Explains control flow with exceptions
+- TCO still works in catch handlers
+
+EXAMPLES:
+- Basic throw/catch patterns
+- Safe division functions
+- Nested exception handling
+- Macros using try/catch
+- Custom error types using lists
+
+TECHNICAL NOTES:
+- Uses Ruby's exception system underneath
+- Maintains TCO in catch handlers
+- Exception values can be any MAL type
+- Catch handlers create new environment
