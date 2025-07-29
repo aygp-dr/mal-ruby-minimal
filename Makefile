@@ -1,4 +1,4 @@
-.PHONY: all help deps run repl tmux-repl lint test test-unit test-integration test-coverage test-emacs check-constraints clean push push-all gh-info gh-workflows gh-secrets examples mal-deps presentation
+.PHONY: all help deps run repl tmux-repl lint test test-unit test-integration test-coverage test-emacs check-constraints clean push push-all gh-info gh-workflows gh-secrets examples mal-deps presentation experiments screenshots
 
 # Default target
 all: help
@@ -27,6 +27,8 @@ help:
 	@echo "  make check-constraints - Verify no arrays/hashes/blocks"
 	@echo "  make clean            - Clean generated files"
 	@echo "  make examples         - Run example programs"
+	@echo "  make experiments      - List and validate all experiments"
+	@echo "  make screenshots      - Generate project screenshots"
 	@echo ""
 	@echo "Git targets:"
 	@echo "  make push             - Push commits, notes, and tags"
@@ -309,3 +311,70 @@ push-all: test lint
 		exit 1; \
 	fi
 	@$(MAKE) push
+
+# Experiment management
+experiments:
+	@echo "Available Experiments"
+	@echo "===================="
+	@echo ""
+	@for exp in experiments/*/README.md; do \
+		if [ -f "$$exp" ]; then \
+			dir=$$(dirname "$$exp"); \
+			name=$$(basename "$$dir"); \
+			title=$$(head -1 "$$exp" | sed 's/^# *//'); \
+			echo "$$name: $$title"; \
+		fi \
+	done
+	@echo ""
+	@echo "To run a specific experiment:"
+	@echo "  make -C experiments/001-ruby-ast-validation"
+	@echo "  make -C experiments/011-mal-tui-validation validate-repl"
+	@echo "  make -C experiments/012-eshell-mal-workflow demo"
+
+# Screenshot generation
+screenshots:
+	@echo "Screenshot Generation"
+	@echo "===================="
+	@echo ""
+	@echo "Available screenshot types:"
+	@echo "  gui       - Emacs GUI with MAL syntax highlighting"
+	@echo "  terminal  - Terminal session with REPL"
+	@echo "  tmux      - Complete development environment"
+	@echo "  workspace - Multi-pane Emacs workspace"
+	@echo ""
+	@echo "Usage:"
+	@echo "  ./scripts/screenshot.sh gui"
+	@echo "  ./scripts/screenshot.sh tmux screenshots/my-setup"
+	@echo ""
+	@if [ ! -d screenshots ]; then mkdir -p screenshots; fi
+	@echo "Generating sample screenshots..."
+	@./scripts/screenshot.sh gui screenshots/sample-gui 2>/dev/null || echo "Failed to generate GUI screenshot (needs Xvfb)"
+	@./scripts/screenshot.sh terminal screenshots/sample-terminal 2>/dev/null || echo "Generated terminal HTML"
+	@echo ""
+	@echo "Screenshots saved in screenshots/ directory"
+
+# Validate all experiments
+validate-experiments:
+	@echo "Validating All Experiments"
+	@echo "=========================="
+	@echo ""
+	@failed=0; \
+	for exp_dir in experiments/*/; do \
+		if [ -f "$$exp_dir/Makefile" ]; then \
+			exp_name=$$(basename "$$exp_dir"); \
+			echo -n "Testing $$exp_name: "; \
+			if $(MAKE) -C "$$exp_dir" test >/dev/null 2>&1; then \
+				echo "✓ PASSED"; \
+			else \
+				echo "✗ FAILED"; \
+				failed=$$((failed + 1)); \
+			fi; \
+		fi \
+	done; \
+	echo ""; \
+	if [ $$failed -eq 0 ]; then \
+		echo "All experiments validated successfully!"; \
+	else \
+		echo "$$failed experiment(s) failed validation"; \
+		exit 1; \
+	fi
