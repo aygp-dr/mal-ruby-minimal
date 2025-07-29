@@ -100,6 +100,7 @@ test-unit:
 	@ruby test/test_step4_functions.rb
 	@ruby test/test_step7.rb
 	@ruby test/test_step8_macros.rb
+	@ruby test/test_step9_try.rb
 	@echo "Unit tests passed!"
 
 test-integration:

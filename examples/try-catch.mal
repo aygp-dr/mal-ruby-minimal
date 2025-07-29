@@ -1,0 +1,112 @@
+; MAL Try/Catch Exception Handling Examples
+; Demonstrates error handling in MAL
+
+; Basic exception throwing and catching
+(println "Basic try/catch:")
+(try* 
+  (throw "Something went wrong!")
+  (catch* e 
+    (println "Caught error:" e)))
+
+; Catching division by zero
+(println "\nDivision by zero:")
+(def! safe-divide (fn* (a b)
+  (try*
+    (/ a b)
+    (catch* e
+      (str "Cannot divide " a " by " b)))))
+
+(println "(safe-divide 10 2) =>" (safe-divide 10 2))
+(println "(safe-divide 10 0) =>" (safe-divide 10 0))
+
+; Catching undefined symbols
+(println "\nUndefined symbol handling:")
+(try*
+  undefined-variable
+  (catch* e
+    (println "Variable not defined!")))
+
+; Re-throwing exceptions
+(println "\nRe-throwing:")
+(def! process-data (fn* (data)
+  (if (< data 0)
+    (throw "Negative data not allowed!")
+    (* data 2))))
+
+(def! safe-process (fn* (data)
+  (try*
+    (process-data data)
+    (catch* e
+      (throw (str "Processing failed: " e))))))
+
+(try*
+  (safe-process -5)
+  (catch* e
+    (println "Final handler:" e)))
+
+; Nested try/catch
+(println "\nNested try/catch:")
+(try*
+  (try*
+    (throw "Inner error")
+    (catch* inner
+      (println "Inner catch:" inner)
+      (throw "Propagated error")))
+  (catch* outer
+    (println "Outer catch:" outer)))
+
+; Using try/catch in macros
+(println "\nMacros with try/catch:")
+(defmacro! with-default (fn* (default-val body)
+  `(try* ~body (catch* e ~default-val))))
+
+(println "(with-default 0 (/ 10 2)) =>" (with-default 0 (/ 10 2)))
+(println "(with-default 0 (/ 10 0)) =>" (with-default 0 (/ 10 0)))
+(println "(with-default \"unknown\" undefined-var) =>" 
+         (with-default "unknown" undefined-var))
+
+; Custom error types (using lists)
+(println "\nCustom error types:")
+(def! make-error (fn* (type msg)
+  (list 'error type msg)))
+
+(def! error-type (fn* (err)
+  (if (and (list? err) (= (car err) 'error))
+    (car (cdr err))
+    nil)))
+
+(def! error-msg (fn* (err)
+  (if (and (list? err) (= (car err) 'error))
+    (car (cdr (cdr err)))
+    nil)))
+
+(try*
+  (throw (make-error 'file-not-found "config.mal"))
+  (catch* e
+    (if (= (error-type e) 'file-not-found)
+      (println "File error:" (error-msg e))
+      (println "Unknown error:" e))))
+
+; Error accumulation pattern
+(println "\nError accumulation:")
+(def! validate-all (fn* (validators value)
+  (if (empty? validators)
+    (list 'ok value)
+    (try*
+      (let* (result ((car validators) value))
+        (validate-all (cdr validators) value))
+      (catch* e
+        (list 'error e))))))
+
+(def! positive? (fn* (x)
+  (if (> x 0) x (throw "Not positive"))))
+
+(def! even? (fn* (x)
+  (if (= (% x 2) 0) x (throw "Not even"))))
+
+(println "(validate-all (list positive? even?) 4) =>"
+         (validate-all (list positive? even?) 4))
+(println "(validate-all (list positive? even?) 3) =>"
+         (validate-all (list positive? even?) 3))
+(println "(validate-all (list positive? even?) -2) =>"
+         (validate-all (list positive? even?) -2))
