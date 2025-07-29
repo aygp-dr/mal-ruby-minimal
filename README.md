@@ -100,11 +100,11 @@ graph LR
         S4[Step 4<br/>Functions]
         S5[Step 5<br/>TCO]
         S6[Step 6<br/>Files]
-        S7[Step 7<br/>Macros]
+        S7[Step 7<br/>Quote]
     end
     
     subgraph "Advanced"
-        S8[Step 8<br/>Macros+]
+        S8[Step 8<br/>Macros]
         S9[Step 9<br/>Try/Catch]
         SA[Step A<br/>Self-Host]
     end
@@ -120,13 +120,13 @@ graph LR
     style S4 fill:#90EE90
     style S5 fill:#90EE90
     style S6 fill:#90EE90
-    style S7 fill:#FFD700
-    style S8 fill:#FFB6C1
-    style S9 fill:#FFB6C1
+    style S7 fill:#90EE90
+    style S8 fill:#90EE90
+    style S9 fill:#90EE90
     style SA fill:#FFB6C1
 ```
 
-*Green: Complete | Yellow: In Progress | Pink: Planned*
+*Green: Complete | Pink: Planned (Self-hosting)*
 
 > **Note**: This is an experimental exploration into minimal language implementation. It demonstrates how a complete Lisp interpreter can be built without using Ruby's built-in arrays, hashes, or blocks - everything is constructed from cons cells.
 
@@ -159,12 +159,14 @@ This project implements a complete Lisp interpreter following the [Make-a-Lisp (
 
 ### Features Implemented
 - **Parser**: Tokenizer and recursive descent parser for S-expressions
-- **Data Types**: Numbers, strings, symbols, lists, functions
-- **Special Forms**: `def!`, `let*`, `if`, `fn*`, `do`, `quote`, `quasiquote`
+- **Data Types**: Numbers, strings, symbols, lists, functions, atoms (mutable refs)
+- **Special Forms**: `def!`, `let*`, `if`, `fn*`, `do`, `quote`, `quasiquote`, `defmacro!`, `try*`
 - **Functions**: First-class functions with lexical closures
 - **TCO**: Tail call optimization prevents stack overflow
-- **I/O**: File loading and basic output
-- **Metaprogramming**: Quote and quasiquote for code manipulation
+- **I/O**: File loading, basic output, and `slurp` for reading files
+- **Metaprogramming**: Quote, quasiquote, and powerful macro system
+- **Error Handling**: Exception handling with `try*/catch*`
+- **Atoms**: Mutable state containers with `atom`, `deref`, `reset!`, `swap!`
 
 ## Running the REPL
 
@@ -309,20 +311,81 @@ chmod +x mal_minimal.rb
 (1 2 3 4 5)
 ```
 
+### Macros
+```lisp
+; Define a when macro (if without else)
+> (defmacro! when (fn* (pred body)
+    `(if ~pred ~body nil)))
+#<macro>
+
+> (when (< 2 3) "yes!")
+"yes!"
+
+> (when (> 2 3) "no!")
+nil
+
+; Define unless (opposite of when)
+> (defmacro! unless (fn* (pred a b)
+    `(if ~pred ~b ~a)))
+#<macro>
+
+> (unless false "true case" "false case")
+"true case"
+```
+
+### Exception Handling
+```lisp
+; Basic exception handling
+> (try*
+    (throw "Something went wrong!")
+    (catch* e
+      (str "Caught: " e)))
+"Caught: Something went wrong!"
+
+; Handle division by zero
+> (try*
+    (/ 1 0)
+    (catch* e
+      "Can't divide by zero!"))
+"Can't divide by zero!"
+
+; Exceptions propagate if not caught
+> (def! risky (fn* (x)
+    (if (< x 0)
+      (throw "Negative not allowed!")
+      (* x 2))))
+#<function>
+
+> (try*
+    (risky -5)
+    (catch* e
+      (str "Error: " e)))
+"Error: Negative not allowed!"
+```
+
 ## Built-in Functions
 
-- Arithmetic: `+`, `-`, `*`, `/`
-- Comparison: `=`, `<`, `>`
-- List operations: `list`, `car`, `cdr`, `cons`, `null?`
-- I/O: `print`
+- **Arithmetic**: `+`, `-`, `*`, `/`, `%`
+- **Comparison**: `=`, `<`, `>`, `<=`, `>=`
+- **List operations**: `list`, `list?`, `empty?`, `count`, `cons`, `concat`, `car`, `cdr`
+- **Logic**: `not`
+- **String functions**: `pr-str`, `str`, `prn`, `println`, `read-string`, `slurp`
+- **Atoms**: `atom`, `atom?`, `deref`, `reset!`, `swap!`
+- **Exceptions**: `throw`
+- **Special**: `eval`
 
 ## Special Forms
 
-- `def` - Define a variable
+- `def!` - Define a variable
+- `defmacro!` - Define a macro
+- `let*` - Local bindings
 - `if` - Conditional expression
-- `fn` - Create a function
-- `quote` - Return expression unevaluated
+- `fn*` - Create a function
 - `do` - Evaluate multiple expressions
+- `quote` - Return expression unevaluated
+- `quasiquote` - Selective evaluation with `~` and `~@`
+- `macroexpand` - Show macro expansion
+- `try*` - Exception handling with `catch*`
 
 ## Implementation Details
 
