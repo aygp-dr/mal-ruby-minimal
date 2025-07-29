@@ -1,0 +1,62 @@
+<span style="color:black;background-color:white;">File Edit Options Buffers Tools Lisp Help
+</span><span style="color:#ff8700;">; MAL Macro Examples </span>
+<span style="color:#ff8700;">; Demonstrates the power of macros in MAL </span>
+
+<span style="color:#ff8700;">; Simple macro - unless </span>
+(<span style="filter: contrast(70%) brightness(190%);color:aqua;">defmacro!</span> <span style="color:#87d7ff;">unless</span> (<span style="filter: contrast(70%) brightness(190%);color:aqua;">fn*</span> (pred a b)
+  `(<span style="filter: contrast(70%) brightness(190%);color:aqua;">if</span> ~pred ~b ~a)))
+
+(<span style="color:#afd7d7;">println</span> <span style="color:#ffaf87;">&quot;unless macro:&quot;</span>)
+(<span style="color:#afd7d7;">println</span> <span style="color:#ffaf87;">&quot;(unless false 'yes 'no) =&gt;&quot;</span> (unless <span style="color:#87ffd7;">false</span> <span style="color:#ffaf87;">&quot;yes&quot;</span> <span style="color:#ffaf87;">&quot;no&quot;</span>))
+(<span style="color:#afd7d7;">println</span> <span style="color:#ffaf87;">&quot;(unless true 'yes 'no) =&gt;&quot;</span> (unless <span style="color:#87ffd7;">true</span> <span style="color:#ffaf87;">&quot;yes&quot;</span> <span style="color:#ffaf87;">&quot;no&quot;</span>))
+
+<span style="color:#ff8700;">; Macro for 'or' - short-circuit evaluation </span>
+(<span style="filter: contrast(70%) brightness(190%);color:aqua;">defmacro!</span> <span style="color:#afd7d7;">or</span> (<span style="filter: contrast(70%) brightness(190%);color:aqua;">fn*</span> (a b)
+  `(<span style="filter: contrast(70%) brightness(190%);color:aqua;">let*</span> (temp ~a)
+    (<span style="filter: contrast(70%) brightness(190%);color:aqua;">if</span> temp temp ~b))))
+
+(<span style="color:#afd7d7;">println</span> <span style="color:#ffaf87;">&quot;\nor macro (with short-circuit):&quot;</span>)
+(<span style="color:#afd7d7;">println</span> <span style="color:#ffaf87;">&quot;(or false true) =&gt;&quot;</span> (<span style="color:#afd7d7;">or</span> <span style="color:#87ffd7;">false</span> <span style="color:#87ffd7;">true</span>))
+(<span style="color:#afd7d7;">println</span> <span style="color:#ffaf87;">&quot;(or 1 (/ 1 0)) =&gt;&quot;</span> (<span style="color:#afd7d7;">or</span> <span style="color:#87ffd7;">1</span> (<span style="color:#afd7d7;">/</span> <span style="color:#87ffd7;">1</span> <span style="color:#87ffd7;">0</span>)))  <span style="color:#ff8700;">; Second arg not evaluated! </span>
+
+<span style="color:#ff8700;">; Macro for 'and' </span>
+(<span style="filter: contrast(70%) brightness(190%);color:aqua;">defmacro!</span> <span style="color:#afd7d7;">and</span> (<span style="filter: contrast(70%) brightness(190%);color:aqua;">fn*</span> (a b)
+  `(<span style="filter: contrast(70%) brightness(190%);color:aqua;">if</span> ~a ~b <span style="color:#87ffd7;">false</span>)))
+
+(<span style="color:#afd7d7;">println</span> <span style="color:#ffaf87;">&quot;\nand macro:&quot;</span>)
+(<span style="color:#afd7d7;">println</span> <span style="color:#ffaf87;">&quot;(and true true) =&gt;&quot;</span> (<span style="color:#afd7d7;">and</span> <span style="color:#87ffd7;">true</span> <span style="color:#87ffd7;">true</span>))
+(<span style="color:#afd7d7;">println</span> <span style="color:#ffaf87;">&quot;(and true false) =&gt;&quot;</span> (<span style="color:#afd7d7;">and</span> <span style="color:#87ffd7;">true</span> <span style="color:#87ffd7;">false</span>))
+(<span style="color:#afd7d7;">println</span> <span style="color:#ffaf87;">&quot;(and false (/ 1 0)) =&gt;&quot;</span> (<span style="color:#afd7d7;">and</span> <span style="color:#87ffd7;">false</span> (<span style="color:#afd7d7;">/</span> <span style="color:#87ffd7;">1</span> <span style="color:#87ffd7;">0</span>)))  <span style="color:#ff8700;">; Second arg not evaluated! </span>
+
+<span style="color:#ff8700;">; Thread-first macro (like Clojure's -&gt;) </span>
+(<span style="filter: contrast(70%) brightness(190%);color:aqua;">defmacro!</span> <span style="color:#87d7ff;">-&gt;</span> (<span style="filter: contrast(70%) brightness(190%);color:aqua;">fn*</span> (x form)
+  (<span style="filter: contrast(70%) brightness(190%);color:aqua;">if</span> (<span style="color:#afd7d7;">list?</span> form)
+    `(~(car form) ~x ~@(cdr form))
+    (<span style="color:#afd7d7;">list</span> form x))))
+
+(<span style="color:#afd7d7;">println</span> <span style="color:#ffaf87;">&quot;\nthread-first macro:&quot;</span>)
+(<span style="color:#afd7d7;">println</span> <span style="color:#ffaf87;">&quot;(-&gt; 5 (+ 3)) =&gt;&quot;</span> (-&gt; <span style="color:#87ffd7;">5</span> (<span style="color:#afd7d7;">+</span> <span style="color:#87ffd7;">3</span>)))
+(<span style="color:#afd7d7;">println</span> <span style="color:#ffaf87;">&quot;(-&gt; 5 (+ 3) (* 2)) =&gt;&quot;</span>
+  (<span style="filter: contrast(70%) brightness(190%);color:aqua;">macroexpand</span> (-&gt; <span style="color:#87ffd7;">5</span> (<span style="color:#afd7d7;">+</span> <span style="color:#87ffd7;">3</span>) (<span style="color:#afd7d7;">*</span> <span style="color:#87ffd7;">2</span>))))  <span style="color:#ff8700;">; Shows expansion </span>
+
+<span style="color:#ff8700;">; Debugging with macroexpand </span>
+(<span style="color:#afd7d7;">println</span> <span style="color:#ffaf87;">&quot;\nMacro expansion:&quot;</span>)
+(<span style="color:#afd7d7;">println</span> <span style="color:#ffaf87;">&quot;(macroexpand '(unless false 1 2)) =&gt;&quot;</span>
+  (<span style="filter: contrast(70%) brightness(190%);color:aqua;">macroexpand</span> '(unless <span style="color:#87ffd7;">false</span> <span style="color:#87ffd7;">1</span> <span style="color:#87ffd7;">2</span>)))
+(<span style="color:#afd7d7;">println</span> <span style="color:#ffaf87;">&quot;(macroexpand '(or x y)) =&gt;&quot;</span>
+  (<span style="filter: contrast(70%) brightness(190%);color:aqua;">macroexpand</span> '(<span style="color:#afd7d7;">or</span> x y)))
+
+<span style="color:#ff8700;">; Complex macro - cond </span>
+(<span style="filter: contrast(70%) brightness(190%);color:aqua;">defmacro!</span> <span style="filter: contrast(70%) brightness(190%);color:aqua;">cond</span> (<span style="filter: contrast(70%) brightness(190%);color:aqua;">fn*</span> (&amp; clauses)
+  (<span style="filter: contrast(70%) brightness(190%);color:aqua;">if</span> (<span style="color:#afd7d7;">empty?</span> clauses)
+    <span style="color:#87ffd7;">nil</span>
+    (<span style="filter: contrast(70%) brightness(190%);color:aqua;">if</span> (<span style="color:#afd7d7;">=</span> <span style="color:#87ffd7;">1</span> (<span style="color:#afd7d7;">count</span> clauses))
+      (car clauses)
+      `(<span style="filter: contrast(70%) brightness(190%);color:aqua;">if</span> ~(car clauses)
+        ~(car (cdr clauses))
+        (<span style="filter: contrast(70%) brightness(190%);color:aqua;">cond</span> ~@(cdr (cdr clauses))))))))
+
+(<span style="color:#afd7d7;">println</span> <span style="color:#ffaf87;">&quot;\ncond macro:&quot;</span>)
+(<span style="filter: contrast(70%) brightness(190%);color:aqua;">def!</span> <span style="color:#87d7ff;">x</span> <span style="color:#87ffd7;">15</span>)
+<span style="color:dimgray;"></span><span style="color:dimgray;background-color:#c0c0c0;">-UU-:---  F1  </span><span style="font-weight:bold;color:dimgray;background-color:#c0c0c0;">macros.mal  </span><span style="color:dimgray;"></span><span style="color:dimgray;background-color:#c0c0c0;">   Top   L1    Git-main  (MAL) -----------------------------------------------------------------------------------------------------------------------------------------------
+</span><span style="background-color:#c0c0c0;"></span>macros.mal has auto save data; consider <span style="color:#afd7d7;"></span><span style="color:#afd7d7;background-color:#2a2a2a;">M-x recover-this-file</span><span style="background-color:#2a2a2a;"></span>
