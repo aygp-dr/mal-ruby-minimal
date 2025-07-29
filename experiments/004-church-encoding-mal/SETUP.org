@@ -1,0 +1,582 @@
+#+TITLE: Church Encoding Implementation for MAL
+#+AUTHOR: MAL Ruby Minimal Project
+#+DATE: 2025-07-29
+#+PROPERTY: header-args:lisp :results output :exports both
+#+PROPERTY: header-args:mermaid :exports results :results file
+
+* Church Encoding in MAL Lisp
+
+This implementation provides Church encodings for MAL (Make-A-Lisp), demonstrating how to represent data structures using only functions. This is particularly relevant for understanding the theoretical foundations of Lisp and lambda calculus.
+
+** Architecture Overview
+
+#+begin_src mermaid :file experiments/church-architecture.png :mkdirp t
+graph TD
+    subgraph "Church Encodings"
+        CN[Church Numerals]
+        CB[Church Booleans]
+        CP[Church Pairs]
+        CL[Church Lists]
+    end
+    
+    subgraph "Core Operations"
+        AR[Arithmetic]
+        LG[Logic]
+        DS[Data Structures]
+    end
+    
+    subgraph "MAL Integration"
+        ENV[Environment]
+        EVAL[Evaluator]
+        CORE[Core Functions]
+    end
+    
+    CN --> AR
+    CB --> LG
+    CP --> DS
+    CL --> DS
+    
+    AR --> CORE
+    LG --> CORE
+    DS --> CORE
+    
+    CORE --> ENV
+    ENV --> EVAL
+    
+    style CN fill:#f9f,stroke:#333,stroke-width:2px
+    style CB fill:#f9f,stroke:#333,stroke-width:2px
+    style CP fill:#f9f,stroke:#333,stroke-width:2px
+    style CL fill:#f9f,stroke:#333,stroke-width:2px
+#+end_src
+
+** Implementation Files
+
+*** experiments/church_encoding.mal
+:PROPERTIES:
+:header-args: :tangle experiments/church_encoding.mal :mkdirp t
+:END:
+
+#+begin_src lisp
+;; Church Encoding Implementation for MAL
+;; ======================================
+;; Pure functional representations using only functions
+
+;; Church Booleans
+;; ---------------
+;; TRUE selects first argument, FALSE selects second
+
+(def! church-true (fn* [x y] x))
+(def! church-false (fn* [x y] y))
+
+;; Boolean operations
+(def! church-and (fn* [p q]
+  (p q p)))
+
+(def! church-or (fn* [p q]
+  (p p q)))
+
+(def! church-not (fn* [p]
+  (p church-false church-true)))
+
+(def! church-if (fn* [p then else]
+  (p then else)))
+
+;; Convert Church boolean to MAL boolean
+(def! church-bool->bool (fn* [cb]
+  (cb true false)))
+
+;; Convert MAL boolean to Church boolean
+(def! bool->church-bool (fn* [b]
+  (if b church-true church-false)))
+
+;; Church Numerals
+;; ---------------
+;; A number n is represented as a function that applies f n times to x
+
+(def! church-zero (fn* [f x] x))
+
+(def! church-succ (fn* [n]
+  (fn* [f x]
+    (f (n f x)))))
+
+(def! church-one (church-succ church-zero))
+(def! church-two (church-succ church-one))
+(def! church-three (church-succ church-two))
+
+;; Arithmetic operations
+(def! church-add (fn* [m n]
+  (fn* [f x]
+    (m f (n f x)))))
+
+(def! church-mult (fn* [m n]
+  (fn* [f]
+    (m (n f)))))
+
+(def! church-exp (fn* [m n]
+  (n m)))
+
+;; Predecessor (complex due to Church encoding constraints)
+(def! church-pred (fn* [n]
+  (fn* [f x]
+    (let* [helper (fn* [g h]
+                    (h (g f)))
+           const (fn* [u] x)
+           identity (fn* [u] u)]
+      ((n (fn* [g] (helper g)))
+       const
+       identity)))))
+
+;; Subtraction (bounded at zero)
+(def! church-sub (fn* [m n]
+  ((n church-pred) m)))
+
+;; Zero test
+(def! church-zero? (fn* [n]
+  ((n (fn* [x] church-false)) church-true)))
+
+;; Less than or equal
+(def! church-leq? (fn* [m n]
+  (church-zero? (church-sub m n))))
+
+;; Equality
+(def! church-eq? (fn* [m n]
+  (church-and (church-leq? m n)
+              (church-leq? n m))))
+
+;; Convert Church numeral to MAL integer
+(def! church-num->int (fn* [n]
+  (n (fn* [x] (+ x 1)) 0)))
+
+;; Convert MAL integer to Church numeral
+(def! int->church-num (fn* [i]
+  (if (= i 0)
+    church-zero
+    (church-succ (int->church-num (- i 1))))))
+
+;; Church Pairs
+;; ------------
+;; Pairs store two values and select between them
+
+(def! church-pair (fn* [x y]
+  (fn* [f]
+    (f x y))))
+
+(def! church-first (fn* [p]
+  (p church-true)))
+
+(def! church-second (fn* [p]
+  (p church-false)))
+
+;; Church Lists
+;; ------------
+;; Lists are nested pairs with a nil terminator
+
+(def! church-nil church-false)
+
+(def! church-nil? (fn* [l]
+  (l (fn* [h t] church-false)
+     church-true)))
+
+(def! church-cons church-pair)
+
+(def! church-head church-first)
+
+(def! church-tail church-second)
+
+;; List operations
+(def! church-length (fn* [l]
+  (church-if (church-nil? l)
+    church-zero
+    (church-succ (church-length (church-tail l))))))
+
+(def! church-append (fn* [l1 l2]
+  (church-if (church-nil? l1)
+    l2
+    (church-cons (church-head l1)
+                 (church-append (church-tail l1) l2)))))
+
+;; Convert MAL list to Church list
+(def! list->church-list (fn* [lst]
+  (if (empty? lst)
+    church-nil
+    (church-cons (first lst)
+                 (list->church-list (rest lst))))))
+
+;; Convert Church list to MAL list
+(def! church-list->list (fn* [cl]
+  (if (church-bool->bool (church-nil? cl))
+    '()
+    (cons (church-head cl)
+          (church-list->list (church-tail cl))))))
+
+;; Higher-order list functions
+(def! church-map (fn* [f l]
+  (church-if (church-nil? l)
+    church-nil
+    (church-cons (f (church-head l))
+                 (church-map f (church-tail l))))))
+
+(def! church-filter (fn* [pred l]
+  (church-if (church-nil? l)
+    church-nil
+    (church-if (pred (church-head l))
+      (church-cons (church-head l)
+                   (church-filter pred (church-tail l)))
+      (church-filter pred (church-tail l))))))
+
+(def! church-fold (fn* [f init l]
+  (church-if (church-nil? l)
+    init
+    (f (church-head l)
+       (church-fold f init (church-tail l))))))
+
+;; Y Combinator for recursion
+;; --------------------------
+(def! Y (fn* [f]
+  ((fn* [x] (f (fn* [y] ((x x) y))))
+   (fn* [x] (f (fn* [y] ((x x) y)))))))
+
+;; Factorial using Y combinator and Church numerals
+(def! church-factorial
+  (Y (fn* [f]
+       (fn* [n]
+         (church-if (church-zero? n)
+           church-one
+           (church-mult n (f (church-pred n))))))))
+
+;; Export all Church encoding functions for use in MAL
+(def! church-encoding-exports
+  {:church-true church-true
+   :church-false church-false
+   :church-and church-and
+   :church-or church-or
+   :church-not church-not
+   :church-if church-if
+   :church-zero church-zero
+   :church-succ church-succ
+   :church-add church-add
+   :church-mult church-mult
+   :church-exp church-exp
+   :church-pred church-pred
+   :church-sub church-sub
+   :church-zero? church-zero?
+   :church-leq? church-leq?
+   :church-eq? church-eq?
+   :church-pair church-pair
+   :church-first church-first
+   :church-second church-second
+   :church-nil church-nil
+   :church-nil? church-nil?
+   :church-cons church-cons
+   :church-head church-head
+   :church-tail church-tail
+   :church-length church-length
+   :church-append church-append
+   :church-map church-map
+   :church-filter church-filter
+   :church-fold church-fold
+   :church-factorial church-factorial
+   :church-num->int church-num->int
+   :int->church-num int->church-num
+   :church-bool->bool church-bool->bool
+   :bool->church-bool bool->church-bool
+   :list->church-list list->church-list
+   :church-list->list church-list->list
+   :Y Y})
+#+end_src
+
+*** test/test_church_encoding.mal
+:PROPERTIES:
+:header-args: :tangle test/test_church_encoding.mal :mkdirp t
+:END:
+
+#+begin_src lisp
+;; Test suite for Church encoding implementation
+;; Load the Church encoding library
+(load-file "experiments/church_encoding.mal")
+
+;; Test helpers
+(def! assert (fn* [expr msg]
+  (if expr
+    (println (str "✓ " msg))
+    (throw (str "✗ FAILED: " msg)))))
+
+(def! test-church-booleans (fn* []
+  (println "\nTesting Church Booleans:")
+  (assert (= (church-bool->bool church-true) true)
+          "church-true converts to true")
+  (assert (= (church-bool->bool church-false) false)
+          "church-false converts to false")
+  (assert (church-bool->bool (church-and church-true church-true))
+          "AND: true ∧ true = true")
+  (assert (not (church-bool->bool (church-and church-true church-false)))
+          "AND: true ∧ false = false")
+  (assert (church-bool->bool (church-or church-false church-true))
+          "OR: false ∨ true = true")
+  (assert (church-bool->bool (church-not church-false))
+          "NOT: ¬false = true")))
+
+(def! test-church-numerals (fn* []
+  (println "\nTesting Church Numerals:")
+  (assert (= (church-num->int church-zero) 0)
+          "church-zero = 0")
+  (assert (= (church-num->int church-one) 1)
+          "church-one = 1")
+  (assert (= (church-num->int (church-succ church-two)) 3)
+          "successor of 2 = 3")
+  (assert (= (church-num->int (church-add church-two church-three)) 5)
+          "2 + 3 = 5")
+  (assert (= (church-num->int (church-mult church-two church-three)) 6)
+          "2 × 3 = 6")
+  (assert (= (church-num->int (church-exp church-two church-three)) 8)
+          "2³ = 8")
+  (assert (= (church-num->int (church-pred church-three)) 2)
+          "predecessor of 3 = 2")
+  (assert (= (church-num->int (church-sub church-three church-two)) 1)
+          "3 - 2 = 1")
+  (assert (church-bool->bool (church-zero? church-zero))
+          "zero? detects zero")
+  (assert (church-bool->bool (church-eq? church-two church-two))
+          "equality works")))
+
+(def! test-church-pairs (fn* []
+  (println "\nTesting Church Pairs:")
+  (let* [p (church-pair 42 "hello")]
+    (assert (= (church-first p) 42)
+            "first of pair")
+    (assert (= (church-second p) "hello")
+            "second of pair"))))
+
+(def! test-church-lists (fn* []
+  (println "\nTesting Church Lists:")
+  (let* [l1 (list->church-list '(1 2 3))
+         l2 (list->church-list '(4 5))]
+    (assert (= (church-list->list l1) '(1 2 3))
+            "list conversion round-trip")
+    (assert (= (church-num->int (church-length l1)) 3)
+            "list length")
+    (assert (= (church-head l1) 1)
+            "list head")
+    (assert (= (church-list->list (church-tail l1)) '(2 3))
+            "list tail")
+    (assert (= (church-list->list (church-append l1 l2)) '(1 2 3 4 5))
+            "list append")
+    (assert (= (church-list->list 
+                (church-map (fn* [x] (* x 2)) l1)) 
+               '(2 4 6))
+            "list map")
+    (assert (= (church-list->list
+                (church-filter (fn* [x] (> x 1)) l1))
+               '(2 3))
+            "list filter"))))
+
+(def! test-y-combinator (fn* []
+  (println "\nTesting Y Combinator:")
+  (assert (= (church-num->int (church-factorial church-three)) 6)
+          "factorial 3 = 6")
+  (assert (= (church-num->int 
+              (church-factorial (int->church-num 5))) 
+             120)
+          "factorial 5 = 120")))
+
+;; Run all tests
+(def! run-all-tests (fn* []
+  (println "Running Church Encoding Tests")
+  (println "=============================")
+  (test-church-booleans)
+  (test-church-numerals)
+  (test-church-pairs)
+  (test-church-lists)
+  (test-y-combinator)
+  (println "\nAll tests passed! 🎉")))
+
+(run-all-tests)
+#+end_src
+
+*** examples/church_examples.mal
+:PROPERTIES:
+:header-args: :tangle examples/church_examples.mal :mkdirp t
+:END:
+
+#+begin_src lisp
+;; Interactive examples of Church encoding
+(load-file "experiments/church_encoding.mal")
+
+(println "Church Encoding Examples")
+(println "========================\n")
+
+;; Example 1: Basic arithmetic
+(println "1. Basic Arithmetic with Church Numerals:")
+(let* [five (int->church-num 5)
+       three (int->church-num 3)]
+  (println (str "  5 + 3 = " (church-num->int (church-add five three))))
+  (println (str "  5 × 3 = " (church-num->int (church-mult five three))))
+  (println (str "  5 - 3 = " (church-num->int (church-sub five three))))
+  (println (str "  3^5 = " (church-num->int (church-exp three five)))))
+
+;; Example 2: Conditional logic
+(println "\n2. Conditional Logic:")
+(let* [n (int->church-num 0)]
+  (println (str "  Is 0 zero? " 
+                (church-bool->bool (church-zero? n))))
+  (println (str "  Conditional: " 
+                (church-if (church-zero? n)
+                           "n is zero"
+                           "n is not zero"))))
+
+;; Example 3: List processing
+(println "\n3. List Processing:")
+(let* [nums (list->church-list '(1 2 3 4 5))
+       doubled (church-map (fn* [x] (* x 2)) nums)
+       evens (church-filter (fn* [x] (= (mod x 2) 0)) nums)
+       sum (church-fold + 0 nums)]
+  (println (str "  Original: " (church-list->list nums)))
+  (println (str "  Doubled: " (church-list->list doubled)))
+  (println (str "  Evens only: " (church-list->list evens)))
+  (println (str "  Sum: " sum)))
+
+;; Example 4: Recursive factorial
+(println "\n4. Factorial using Y combinator:")
+(doseq [n (range 0 8)]
+  (let* [cn (int->church-num n)
+         result (church-num->int (church-factorial cn))]
+    (println (str "  " n "! = " result))))
+
+;; Example 5: Building a simple calculator
+(println "\n5. Church Calculator:")
+(def! church-calc (fn* [op a b]
+  (let* [ca (int->church-num a)
+         cb (int->church-num b)
+         result (cond
+                  (= op '+) (church-add ca cb)
+                  (= op '*) (church-mult ca cb)
+                  (= op '-) (church-sub ca cb)
+                  (= op '^) (church-exp ca cb)
+                  :else church-zero)]
+    (church-num->int result))))
+
+(println (str "  calc(+, 7, 3) = " (church-calc '+ 7 3)))
+(println (str "  calc(*, 4, 5) = " (church-calc '* 4 5)))
+(println (str "  calc(^, 2, 8) = " (church-calc '^ 2 8)))
+#+end_src
+
+** Integration with MAL
+
+*** Integration Guide
+
+To integrate Church encodings into your MAL implementation:
+
+#+begin_src lisp :tangle experiments/mal_church_integration.mal :mkdirp t
+;; MAL Integration for Church Encoding
+;; Load this after the main church_encoding.mal
+
+;; Add Church encoding functions to the MAL core namespace
+(def! add-church-to-core (fn* [core-ns]
+  (doseq [entry church-encoding-exports]
+    (let* [name (first entry)
+           func (nth entry 1)]
+      (env-set core-ns name func)))))
+
+;; Example: Adding Church numerals to MAL's type system
+(def! church-numeral? (fn* [obj]
+  (try*
+    (do
+      ;; A Church numeral should be a function that takes 2 args
+      (let* [test-result (obj (fn* [x] (+ x 1)) 0)]
+        (number? test-result))
+      true)
+    (catch* _ false))))
+
+;; Pretty printer for Church encodings
+(def! pr-church (fn* [obj]
+  (cond
+    (church-numeral? obj)
+      (str "#<church-numeral:" (church-num->int obj) ">")
+    
+    ;; Check if it's a Church boolean
+    (try*
+      (do
+        (let* [as-bool (obj true false)]
+          (if (or (= as-bool true) (= as-bool false))
+            (str "#<church-bool:" as-bool ">")
+            (str obj))))
+      (catch* _ (str obj)))
+    
+    :else (str obj))))
+
+;; Macro for Church encoding literals
+(defmacro! church-lit (fn* [type val]
+  (cond
+    (= type :num) `(int->church-num ~val)
+    (= type :bool) `(bool->church-bool ~val)
+    (= type :list) `(list->church-list ~val)
+    :else (throw "Unknown Church literal type"))))
+
+;; Usage examples:
+;; (def! five (church-lit :num 5))
+;; (def! truth (church-lit :bool true))
+;; (def! nums (church-lit :list '(1 2 3)))
+#+end_src
+
+** Theoretical Background
+
+*** Lambda Calculus Foundation
+
+#+begin_src mermaid :file experiments/lambda-calculus.png :mkdirp t
+graph LR
+    subgraph "Pure Lambda Calculus"
+        VAR[Variables: x, y, z]
+        ABS[Abstraction: λx.M]
+        APP[Application: M N]
+    end
+    
+    subgraph "Church Encoding"
+        CNUM[Numbers as Functions]
+        CBOOL[Booleans as Selectors]
+        CPAIR[Pairs as Distributors]
+    end
+    
+    subgraph "MAL Implementation"
+        FN[fn* form]
+        LET[let* binding]
+        EVAL[evaluation]
+    end
+    
+    VAR --> FN
+    ABS --> FN
+    APP --> EVAL
+    
+    CNUM --> |"λf.λx.f^n(x)"| Numbers
+    CBOOL --> |"λx.λy.x/y"| Conditions
+    CPAIR --> |"λf.f x y"| DataStructures
+    
+    style VAR fill:#ffd,stroke:#333,stroke-width:2px
+    style ABS fill:#ffd,stroke:#333,stroke-width:2px
+    style APP fill:#ffd,stroke:#333,stroke-width:2px
+#+end_src
+
+*** Key Insights
+
+1. **Everything is a Function**: In Church encoding, all data types are represented as functions
+2. **Closure Property**: Church encodings rely on lexical closure to maintain state
+3. **Lazy Evaluation**: Many Church operations benefit from lazy evaluation
+4. **Self-Application**: The Y combinator enables recursion through self-application
+
+** Performance Considerations
+
+Church encodings are primarily of theoretical interest. For production use:
+
+- Church numerals have O(n) complexity for most operations
+- Native implementations are significantly faster
+- Use Church encodings for:
+  - Educational purposes
+  - Theoretical proofs
+  - Bootstrapping minimal systems
+  - Understanding lambda calculus
+
+** References
+
+- Alonzo Church, "The Calculi of Lambda-Conversion" (1941)
+- MAL Process Guide: https://github.com/kanaka/mal/blob/master/process/guide.md
+- "Types and Programming Languages" by Benjamin Pierce
+- SICP Chapter 2: Building Abstractions with Data

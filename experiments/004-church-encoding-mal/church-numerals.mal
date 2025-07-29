@@ -1,0 +1,136 @@
+;; Church Encoding: Natural Numbers in Pure Lambda Calculus
+;; Represents numbers as function iteration counts
+
+;; Core Church Numerals
+(def! church-zero (fn* (f x) x))
+(def! church-one (fn* (f x) (f x)))
+(def! church-two (fn* (f x) (f (f x))))
+(def! church-three (fn* (f x) (f (f (f x)))))
+(def! church-four (fn* (f x) (f (f (f (f x))))))
+(def! church-five (fn* (f x) (f (f (f (f (f x)))))))
+
+;; Successor function - the heart of Church arithmetic
+(def! church-succ (fn* (n) 
+  (fn* (f x) (f ((n f) x)))))
+
+;; Arithmetic Operations
+(def! church-add (fn* (m n) 
+  (fn* (f x) ((m f) ((n f) x)))))
+
+(def! church-mult (fn* (m n) 
+  (fn* (f) (m (n f)))))
+
+(def! church-exp (fn* (m n) (n m)))
+
+;; Predecessor (complex but demonstrates lambda calculus power)
+(def! church-pred (fn* (n)
+  (fn* (f x)
+    (((n (fn* (g h) (h (g f))))
+       (fn* (u) x))
+     (fn* (u) u)))))
+
+;; Subtraction using predecessor
+(def! church-sub (fn* (m n) ((n church-pred) m)))
+
+;; Conversion functions
+(def! church->num (fn* (cn) 
+  ((cn (fn* (x) (+ x 1))) 0)))
+
+(def! num->church (fn* (n)
+  (if (= n 0)
+    church-zero
+    (church-succ (num->church (- n 1))))))
+
+;; Comparison operations
+(def! church-iszero (fn* (n) 
+  ((n (fn* (x) church-false)) church-true)))
+
+(def! church-leq (fn* (m n) 
+  (church-iszero (church-sub m n))))
+
+(def! church-eq (fn* (m n)
+  (church-and (church-leq m n) (church-leq n m))))
+
+(def! church-lt (fn* (m n)
+  (church-and (church-leq m n) (church-not (church-eq m n)))))
+
+;; Advanced numeral construction
+(def! church-six (church-add church-three church-three))
+(def! church-seven (church-succ church-six))
+(def! church-eight (church-mult church-two church-four))
+(def! church-nine (church-mult church-three church-three))
+(def! church-ten (church-mult church-two church-five))
+
+;; Test framework for Church numerals
+(def! test-church-numerals (fn* ()
+  (do
+    (println "🔢 Testing Church Numeral Encodings...")
+    
+    ;; Basic numeral conversion
+    (println "Testing basic numerals:")
+    (println "  church-zero ->", (church->num church-zero))
+    (println "  church-one ->", (church->num church-one))
+    (println "  church-two ->", (church->num church-two))
+    (println "  church-three ->", (church->num church-three))
+    
+    ;; Successor function
+    (println "Testing successor:")
+    (println "  succ(zero) ->", (church->num (church-succ church-zero)))
+    (println "  succ(three) ->", (church->num (church-succ church-three)))
+    
+    ;; Addition
+    (println "Testing addition:")
+    (println "  2 + 3 ->", (church->num (church-add church-two church-three)))
+    (println "  1 + 4 ->", (church->num (church-add church-one church-four)))
+    
+    ;; Multiplication  
+    (println "Testing multiplication:")
+    (println "  2 * 3 ->", (church->num (church-mult church-two church-three)))
+    (println "  3 * 3 ->", (church->num (church-mult church-three church-three)))
+    
+    ;; Exponentiation
+    (println "Testing exponentiation:")
+    (println "  2^3 ->", (church->num (church-exp church-two church-three)))
+    (println "  3^2 ->", (church->num (church-exp church-three church-two)))
+    
+    ;; Predecessor and subtraction
+    (println "Testing predecessor and subtraction:")
+    (println "  pred(3) ->", (church->num (church-pred church-three)))
+    (println "  5 - 2 ->", (church->num (church-sub church-five church-two)))
+    
+    ;; Comparison operations
+    (println "Testing comparisons:")
+    (println "  iszero(0) ->", (church->bool (church-iszero church-zero)))
+    (println "  iszero(1) ->", (church->bool (church-iszero church-one)))
+    (println "  2 ≤ 3 ->", (church->bool (church-leq church-two church-three)))
+    (println "  3 ≤ 2 ->", (church->bool (church-leq church-three church-two)))
+    (println "  2 = 2 ->", (church->bool (church-eq church-two church-two)))
+    (println "  2 < 3 ->", (church->bool (church-lt church-two church-three)))
+    
+    (println "✅ Church Numeral tests complete!"))))
+
+;; Demonstrate the power of Church numerals
+(def! demonstrate-church-power (fn* ()
+  (do
+    (println "⚡ Demonstrating Church Numeral Power:")
+    (println "Numbers are functions that iterate other functions!")
+    
+    ;; Show how numerals work as iterators
+    (let* (double (fn* (x) (* x 2))
+           result3 ((church-three double) 1)
+           result4 ((church-four double) 1))
+      (println "  church-three applied to doubling 1:", result3)
+      (println "  church-four applied to doubling 1:", result4))
+    
+    ;; Show string repetition using Church numerals
+    (let* (append-star (fn* (s) (str s "*"))
+           stars3 ((church-three append-star) "")
+           stars5 ((church-five append-star) ""))
+      (println "  three stars:", stars3)
+      (println "  five stars:", stars5))
+    
+    (println "This demonstrates that numbers are truly just iteration patterns!"))))
+
+;; Run the demonstrations
+(test-church-numerals)
+(demonstrate-church-power)

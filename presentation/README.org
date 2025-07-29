@@ -217,21 +217,21 @@ We conducted comprehensive analysis across major Ruby codebases:
 
 *Critical Discovery*: Step 2 shows 5.15x complexity jump (evaluation logic)
 
-** MAL vs Wild Ruby: The Reality Check
+** Wild Ruby Validation: Dual-Parser Discovery
 
 #+BEGIN_CENTER
-*Sample Analysis*: 100 random files from 50k+ Ruby corpus
+*Large-Scale Analysis*: 500 random files from 53k+ Ruby corpus
 #+END_CENTER
 
 #+ATTR_BEAMER: :overlay +-
-- *Wild Ruby*: 66 unique node types vs our 43 (35% more complexity)
-- *Our coverage*: 66.7% of real-world Ruby node diversity
-- *Missing nodes*: NODE_IVAR, NODE_MODULE, NODE_SELF (OOP patterns)
-- *Shared top node*: NODE_LIST dominates both (14-23% usage)
+- *Ruby Parser*: 72 unique node types (65.3% coverage by our MAL)
+- *Prism Parser*: 99 unique node types (53.5% coverage by our MAL)
+- *True Ceiling*: ~99 node types for real-world Ruby code
+- *Parser Difference*: Prism reveals 37% more AST detail than Ruby's built-in parser
 
 #+BEAMER: \pause
 
-*Validation*: Our minimal subset approach captures core Ruby effectively while revealing the 35% gap for production use
+*Validation*: Our minimal subset captures Ruby's computational essence effectively while missing mainly OOP/module patterns unnecessary for Lisp interpretation
 
 * Implementation Patterns
 

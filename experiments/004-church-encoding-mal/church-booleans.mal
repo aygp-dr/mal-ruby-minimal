@@ -1,0 +1,76 @@
+;; Church Encoding: Boolean Logic in Pure Lambda Calculus
+;; Demonstrates MAL's ability to express fundamental computation using only functions
+
+;; Core Church Boolean Definitions
+(def! church-true (fn* (x y) x))
+(def! church-false (fn* (x y) y))
+
+;; Boolean Operations
+(def! church-and (fn* (p q) (p q p)))
+(def! church-or (fn* (p q) (p p q)))
+(def! church-not (fn* (p) (p church-false church-true)))
+(def! church-xor (fn* (p q) (p (church-not q) q)))
+
+;; Conversion to MAL boolean
+(def! church->bool (fn* (cb) (cb true false)))
+(def! bool->church (fn* (b) (if b church-true church-false)))
+
+;; Conditional logic (Church if-then-else)
+(def! church-if (fn* (pred then-val else-val) (pred then-val else-val)))
+
+;; Advanced boolean operations
+(def! church-nor (fn* (p q) (church-not (church-or p q))))
+(def! church-nand (fn* (p q) (church-not (church-and p q))))
+
+;; Boolean equality
+(def! church-bool-eq (fn* (p q) 
+  (church-and (church-or (church-not p) q)
+              (church-or p (church-not q)))))
+
+;; Test functions for validation
+(def! test-church-booleans (fn* ()
+  (do
+    (println "🔬 Testing Church Boolean Encodings...")
+    
+    ;; Basic boolean tests
+    (println "Testing basic booleans:")
+    (println "  church-true ->", (church->bool church-true))
+    (println "  church-false ->", (church->bool church-false))
+    
+    ;; Logical operations
+    (println "Testing logical operations:")
+    (println "  TRUE AND TRUE ->", (church->bool (church-and church-true church-true)))
+    (println "  TRUE AND FALSE ->", (church->bool (church-and church-true church-false)))
+    (println "  FALSE OR TRUE ->", (church->bool (church-or church-false church-true)))
+    (println "  NOT TRUE ->", (church->bool (church-not church-true)))
+    (println "  NOT FALSE ->", (church->bool (church-not church-false)))
+    
+    ;; Advanced operations
+    (println "Testing advanced operations:")
+    (println "  TRUE XOR FALSE ->", (church->bool (church-xor church-true church-false)))
+    (println "  TRUE XOR TRUE ->", (church->bool (church-xor church-true church-true)))
+    
+    ;; Conditional logic
+    (println "Testing conditional logic:")
+    (println "  IF TRUE THEN 42 ELSE 0 ->", (church-if church-true 42 0))
+    (println "  IF FALSE THEN 42 ELSE 0 ->", (church-if church-false 42 0))
+    
+    (println "✅ Church Boolean tests complete!"))))
+
+;; Demonstration of Church encoding equivalence to our cons cell approach
+(def! demonstrate-church-equivalence (fn* ()
+  (do
+    (println "🎯 Demonstrating Church Encoding Equivalence:")
+    (println "Church encoding shows that our cons cells are theoretically sufficient")
+    (println "for all computation - booleans are just functions that select arguments!")
+    
+    ;; Show the connection to our cons cell implementation  
+    (let* (our-true (fn* (x y) x)    ; Same as church-true!
+           our-false (fn* (x y) y))   ; Same as church-false!
+      (println "Our selector functions match Church booleans exactly:")
+      (println "  (our-true 'YES 'NO) ->", (our-true "YES" "NO"))
+      (println "  (our-false 'YES 'NO) ->", (our-false "YES" "NO"))))))
+
+;; Run the demonstrations
+(test-church-booleans)
+(demonstrate-church-equivalence)
