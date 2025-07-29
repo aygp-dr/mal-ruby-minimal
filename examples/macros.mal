@@ -1,0 +1,64 @@
+; MAL Macro Examples
+; Demonstrates the power of macros in MAL
+
+; Simple macro - unless
+(defmacro! unless (fn* (pred a b) 
+  `(if ~pred ~b ~a)))
+
+(println "unless macro:")
+(println "(unless false 'yes 'no) =>" (unless false "yes" "no"))
+(println "(unless true 'yes 'no) =>" (unless true "yes" "no"))
+
+; Macro for 'or' - short-circuit evaluation
+(defmacro! or (fn* (a b) 
+  `(let* (temp ~a) 
+    (if temp temp ~b))))
+
+(println "\nor macro (with short-circuit):")
+(println "(or false true) =>" (or false true))
+(println "(or 1 (/ 1 0)) =>" (or 1 (/ 1 0)))  ; Second arg not evaluated!
+
+; Macro for 'and'
+(defmacro! and (fn* (a b) 
+  `(if ~a ~b false)))
+
+(println "\nand macro:")
+(println "(and true true) =>" (and true true))
+(println "(and true false) =>" (and true false))
+(println "(and false (/ 1 0)) =>" (and false (/ 1 0)))  ; Second arg not evaluated!
+
+; Thread-first macro (like Clojure's ->)
+(defmacro! -> (fn* (x form) 
+  (if (list? form)
+    `(~(car form) ~x ~@(cdr form))
+    (list form x))))
+
+(println "\nthread-first macro:")
+(println "(-> 5 (+ 3)) =>" (-> 5 (+ 3)))
+(println "(-> 5 (+ 3) (* 2)) =>" 
+  (macroexpand (-> 5 (+ 3) (* 2))))  ; Shows expansion
+
+; Debugging with macroexpand
+(println "\nMacro expansion:")
+(println "(macroexpand '(unless false 1 2)) =>" 
+  (macroexpand '(unless false 1 2)))
+(println "(macroexpand '(or x y)) =>" 
+  (macroexpand '(or x y)))
+
+; Complex macro - cond
+(defmacro! cond (fn* (& clauses)
+  (if (empty? clauses)
+    nil
+    (if (= 1 (count clauses))
+      (car clauses)
+      `(if ~(car clauses)
+        ~(car (cdr clauses))
+        (cond ~@(cdr (cdr clauses))))))))
+
+(println "\ncond macro:")
+(def! x 15)
+(println 
+  (cond
+    (< x 10) "small"
+    (< x 20) "medium"  
+    true     "large"))

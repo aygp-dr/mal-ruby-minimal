@@ -99,6 +99,7 @@ test-unit:
 	@ruby test/test_env.rb
 	@ruby test/test_step4_functions.rb
 	@ruby test/test_step7.rb
+	@ruby test/test_step8_macros.rb
 	@echo "Unit tests passed!"
 
 test-integration:
