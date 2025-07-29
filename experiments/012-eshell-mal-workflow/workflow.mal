@@ -1,0 +1,38 @@
+;; MAL Workflow Example
+
+;; Define a simple function
+(def! square (fn* (x) (* x x)))
+
+;; Test it
+(print "5 squared is: ")
+(print (square 5))
+
+;; More complex example: factorial
+(def! factorial (fn* (n)
+  (if (= n 0)
+    1
+    (* n (factorial (- n 1))))))
+
+(print "\n\nFactorial of 6: ")
+(print (factorial 6))
+
+;; Working with lists
+(def! map (fn* (f lst)
+  (if (empty? lst)
+    '()
+    (cons (f (car lst)) 
+          (map f (cdr lst))))))
+
+(print "\n\nSquares of [1 2 3 4 5]: ")
+(print (map square (list 1 2 3 4 5)))
+
+;; Higher-order function example
+(def! compose (fn* (f g)
+  (fn* (x) (f (g x)))))
+
+(def! add1 (fn* (x) (+ x 1)))
+(def! double (fn* (x) (* x 2)))
+(def! add1-then-double (compose double add1))
+
+(print "\n\n(add1-then-double 5): ")
+(print (add1-then-double 5)) ; => 12
