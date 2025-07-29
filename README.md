@@ -19,12 +19,12 @@ A minimal implementation of MAL (Make a Lisp) in Ruby using only 13 AST node typ
 ║                                                                   ║
 ║  Type expressions at the prompt. Some examples:                  ║
 ║    (+ 1 2 3)                    ; => 6                           ║
-║    (def! factorial              ; Define recursive factorial     ║
+║    (def! fact                   ; Define recursive factorial     ║
 ║      (fn* (n)                                                    ║
-║        (if (< n 2)                                               ║
+║        (if (= n 0)                                               ║
 ║          1                                                       ║
-║          (* n (factorial (- n 1))))))                            ║
-║    (factorial 5)                ; => 120                         ║
+║          (* n (fact (- n 1))))))                                 ║
+║    (fact 5)                     ; => 120                         ║
 ║                                                                   ║
 ║  Special forms: def! let* if fn* do quote                       ║
 ║  Built-ins: + - * / = < > <= >= list list? empty? count not     ║
@@ -32,7 +32,7 @@ A minimal implementation of MAL (Make a Lisp) in Ruby using only 13 AST node typ
 ║  Press Ctrl-D to exit                                            ║
 ╚═══════════════════════════════════════════════════════════════════╝
 
-> (def fact (fn (n) (if (= n 0) 1 (* n (fact (- n 1))))))
+> (def! fact (fn* (n) (if (= n 0) 1 (* n (fact (- n 1))))))
 => #<function>
 > (fact 5)
 => 120
