@@ -1,4 +1,4 @@
-.PHONY: run test clean help check-constraints deps push test-unit test-integration
+.PHONY: all help deps run test test-unit test-integration check-constraints clean push gh-info gh-workflows gh-secrets examples
 
 # Default target
 all: help
@@ -75,9 +75,23 @@ clean:
 	@echo "Cleaning..."
 	@rm -f *.tmp *.log
 
+# Run examples
+examples:
+	@$(MAKE) -C examples run
+
 # Run a specific MAL expression
 expr:
 	@echo '$(EXPR)' | ruby mal_minimal.rb | tail -1
+
+# Documentation commands (not PHONY - actual file target)
+docs/mal-process-guide.md: | docs
+	@echo "Downloading MAL process guide..."
+	@curl -L -o $@ https://raw.githubusercontent.com/kanaka/mal/master/process/guide.md
+	@echo "Downloaded to $@"
+
+# Directory creation target
+docs:
+	@install -d $@
 
 # Push commits, notes, and tags to GitHub
 push:
