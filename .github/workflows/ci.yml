@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ruby-version: ['3.0', '3.1', '3.2', '3.3']
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby-version }}
+    
+    - name: Check dependencies
+      run: make deps
+    
+    - name: Check constraints
+      run: make check-constraints
+    
+    - name: Run unit tests
+      run: make test-unit
+    
+    - name: Install expect for integration tests
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y expect
+    
+    - name: Run integration tests
+      run: make test-integration
+    
+    - name: Test MAL implementation
+      run: |
+        echo "(+ 1 2)" | timeout 5 ruby mal_minimal.rb | grep -q "3"
+        echo "✓ Basic arithmetic works"

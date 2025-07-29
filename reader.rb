@@ -380,3 +380,4 @@ end
 
 def list3(a, b, c)
   cons(a, cons(b, cons(c, nil)))
+end
