@@ -1,0 +1,7 @@
+# Ignore research directory with parse trees
+research/
+
+# Ignore generated analysis files
+*.json
+*.log
+*.tmp

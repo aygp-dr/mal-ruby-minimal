@@ -1,0 +1,215 @@
+=== BRUTE FORCE RUBY AST ANALYSIS ===
+=====================================
+
+Analyzing representative Ruby codebases...
+
+Analyzing Rails Framework (/mnt/usb/ruby/rails/rails)...
+  Found 50 Ruby files to analyze...
+  Progress: 0/50  Progress: 10/50  Progress: 20/50  Progress: 30/50  Progress: 40/50  Completed: 50 files analyzed, 0 failed
+Analyzing ActiveAdmin (/mnt/usb/ruby/activeadmin/activeadmin)...
+  Found 50 Ruby files to analyze...
+  Progress: 0/50  Progress: 10/50  Progress: 20/50  Progress: 30/50  Progress: 40/50  Completed: 50 files analyzed, 0 failed
+Analyzing Shopify Liquid (/mnt/usb/ruby/Shopify/liquid)...
+  Found 50 Ruby files to analyze...
+  Progress: 0/50  Progress: 10/50  Progress: 20/50  Progress: 30/50  Progress: 40/50  Completed: 50 files analyzed, 0 failed
+Analyzing Shopify Bootsnap (/mnt/usb/ruby/Shopify/bootsnap)...
+  Found 21 Ruby files to analyze...
+  Progress: 0/21  Progress: 10/21  Progress: 20/21  Completed: 21 files analyzed, 0 failed
+Analyzing Database Cleaner (/mnt/usb/ruby/DatabaseCleaner/database_cleaner)...
+  Found 20 Ruby files to analyze...
+  Progress: 0/20  Progress: 10/20  Completed: 20 files analyzed, 0 failed
+Analyzing AASM State Machine (/mnt/usb/ruby/aasm/aasm)...
+  Found 41 Ruby files to analyze...
+  Progress: 0/41  Progress: 10/41  Progress: 20/41  Progress: 30/41  Progress: 40/41  Completed: 39 files analyzed, 2 failed
+Analyzing RSpec Core (/mnt/usb/ruby/rspec/rspec-core)...
+  Found 0 Ruby files to analyze...
+  Completed: 0 files analyzed, 0 failed
+Analyzing RuboCop (/mnt/usb/ruby/rubocop/rubocop)...
+  Found 50 Ruby files to analyze...
+  Progress: 0/50  Progress: 10/50  Progress: 20/50  Progress: 30/50  Progress: 40/50  Completed: 50 files analyzed, 0 failed
+Analyzing Puma Web Server (/mnt/usb/ruby/puma/puma)...
+  Found 50 Ruby files to analyze...
+  Progress: 0/50  Progress: 10/50  Progress: 20/50  Progress: 30/50  Progress: 40/50  Completed: 50 files analyzed, 0 failed
+Analyzing Sidekiq (/mnt/usb/ruby/sidekiq/sidekiq)...
+  Found 50 Ruby files to analyze...
+  Progress: 0/50  Progress: 10/50  Progress: 20/50  Progress: 30/50  Progress: 40/50  Completed: 50 files analyzed, 0 failed
+
+Analyzing MAL Implementation (.)...
+  Found 32 Ruby files to analyze...
+  Progress: 0/32  Progress: 10/32  Progress: 20/32  Progress: 30/32  Completed: 32 files analyzed, 0 failed
+
+=== COMPREHENSIVE RESULTS ===
+============================
+
+SUMMARY:
+  Total files analyzed: 412
+  Total unique AST node types found: 88
+
+Codebase              Files    Types Essence Coverage                Notes
+--------------------------------------------------------------------------------
+Rails Framework          50       72   10/13 (76.9%)
+ActiveAdmin              50       72   10/13 (76.9%)
+Shopify Liquid           50       76   10/13 (76.9%)
+Shopify Bootsnap         21       71   10/13 (76.9%)
+Database Cleaner         20       63   10/13 (76.9%)
+AASM State Machine       39       67   10/13 (76.9%)
+RuboCop                  50       75   10/13 (76.9%)
+Puma Web Server          50       80   10/13 (76.9%)
+Sidekiq                  50       79   10/13 (76.9%)
+MAL Implementation       32       60   10/13 (76.9%)
+
+=== ALL UNIQUE AST NODE TYPES FOUND ===
+======================================
+Found 88 unique AST node types:
+
+RUBY ESSENCE NODES FOUND (10/13):
+  ✅ args
+  ✅ begin
+  ✅ const
+  ✅ false
+  ✅ if
+  ✅ lvar
+  ✅ nil
+  ✅ return
+  ✅ str
+  ✅ true
+
+RUBY ESSENCE NODES NOT FOUND:
+  ❌ send
+  ❌ int
+  ❌ def
+
+ADDITIONAL NODES BEYOND RUBY ESSENCE (78):
+  + alias
+  + and
+  + argscat
+  + argspush
+  + attrasgn
+  + block
+  + block_pass
+  + break
+  + call
+  + case
+  + case2
+  + cdecl
+  + class
+  + colon2
+  + colon3
+  + cvar
+  + cvasgn
+  + dasgn
+  + defined
+  + defn
+  + defs
+  + dot2
+  + dot3
+  + dregx
+  + dstr
+  + dsym
+  + dvar
+  + dxstr
+  + ensure
+  + errinfo
+  + evstr
+  + fcall
+  + gasgn
+  + gvar
+  + hash
+  + iasgn
+  + iter
+  + ivar
+  + kw_arg
+  + lambda
+  + lasgn
+  + list
+  + lit
+  + masgn
+  + match3
+  + module
+  + next
+  + nth_ref
+  + once
+  + op_asgn1
+  + op_asgn2
+  + op_asgn_and
+  + op_asgn_or
+  + opcall
+  + opt_arg
+  + or
+  + postarg
+  + qcall
+  + resbody
+  + rescue
+  + retry
+  + sclass
+  + scope
+  + self
+  + special_no_name_rest
+  + special_required_keyword
+  + splat
+  + super
+  + types
+  + unless
+  + until
+  + vcall
+  + when
+  + while
+  + xstr
+  + yield
+  + zlist
+  + zsuper
+
+=== FREQUENCY ANALYSIS ===
+==========================
+Top 25 most frequently used AST nodes:
+
+ 1.    scope                412 ( 3.43%)
+ 2.    block                406 ( 3.38%)
+ 3.    list                 403 ( 3.35%)
+ 4.    fcall                390 ( 3.25%)
+ 5.    call                 388 ( 3.23%)
+ 6. 🔥 args                 383 ( 3.19%)
+ 7. 🔥 const                379 ( 3.16%)
+ 8.    lit                  362 ( 3.01%)
+ 9. 🔥 str                  361 ( 3.01%)
+10.    colon2               355 ( 2.96%)
+11. 🔥 begin                339 ( 2.82%)
+12.    defn                 335 ( 2.79%)
+13. 🔥 lvar                 334 ( 2.78%)
+14.    module               321 ( 2.67%)
+15.    vcall                305 ( 2.54%)
+16. 🔥 if                   305 ( 2.54%)
+17.    lasgn                292 ( 2.43%)
+18.    opcall               281 ( 2.34%)
+19.    iter                 278 ( 2.31%)
+20.    dvar                 272 ( 2.26%)
+21.    class                265 ( 2.21%)
+22.    evstr                238 ( 1.98%)
+23.    hash                 230 ( 1.91%)
+24.    dstr                 227 ( 1.89%)
+25.    iasgn                219 ( 1.82%)
+
+=== HYPOTHESIS VALIDATION ===
+============================
+Ruby Essence Hypothesis Analysis:
+  - Proposed 13 essential nodes
+  - Found 10/13 in real codebases (76.9%)
+  - Real codebases use 88 total unique node types
+  - Ruby Essence covers 11.4% of all node types used
+  ❌ Some Ruby Essence nodes are not found in analyzed codebases
+  ❌ Ruby Essence is insufficient - 78 additional nodes needed
+  📊 Ratio: 6.0x more nodes than proposed
+
+PRACTICAL MINIMAL RUBY SUBSET (85% coverage):
+39 nodes: scope, block, list, fcall, call, args, const, lit, str, colon2, begin, defn, lvar, module, vcall, if, lasgn, opcall, iter, dvar, class, evstr, hash, dstr, iasgn, ivar, unless, self, or, return, attrasgn, true, nil, dasgn, and, cdecl, false, opt_arg, resbody
+
+=== CONCLUSION ===
+=================
+❌ Ruby Essence hypothesis needs revision (only 11.4% coverage)
+📊 Empirical findings:
+  - 412 Ruby files analyzed across 10 major codebases
+  - 88 unique AST node types in active use
+  - Practical minimal set: 39 nodes (85% coverage)
+  - Ruby Essence prediction accuracy: 76.9%
+
+📄 Detailed results saved to: experiments/002-ruby-ast-analysis/brute-force-ast-results.json

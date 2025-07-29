@@ -1,6 +1,13 @@
-#\!/usr/bin/expect -f
+#!/usr/bin/expect -f
+
 set timeout 10
+
 spawn ruby mal_minimal.rb
-expect "mal-user> " { send "(+ 1 2)\r" }
-expect "3" { send "(exit)\r" }
+
+expect "> "
+send "(+ 1 2)\r"
+
+expect "=> 3"
+send "\004"
+
 expect eof
