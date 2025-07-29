@@ -1,0 +1,122 @@
+;; Advanced Patterns from Let Over Lambda
+;; Memory management and performance optimization
+
+;; Weak references simulation
+(def! *weak-refs* (atom {}))
+(def! *weak-ref-counter* (atom 0))
+
+(def! make-weak-ref (fn* (obj)
+  (let* (id (swap! *weak-ref-counter* inc))
+    (swap! *weak-refs* assoc id obj)
+    {:type :weak-ref :id id})))
+
+(def! weak-ref-get (fn* (weak-ref)
+  (get @*weak-refs* (:id weak-ref))))
+
+(def! weak-ref-clear (fn* (weak-ref)
+  (swap! *weak-refs* dissoc (:id weak-ref))))
+
+;; Memoization with size limit
+(def! make-limited-memo (fn* (f max-size)
+  (let* (cache (atom {})
+         access-order (atom '()))
+    (fn* (& args)
+      (if (contains? @cache args)
+        (get @cache args)
+        (let* (result (apply f args))
+          (swap! cache assoc args result)
+          (swap! access-order conj args)
+          (when (> (count @cache) max-size)
+            (let* (oldest (first @access-order))
+              (swap! cache dissoc oldest)
+              (swap! access-order rest)))
+          result))))))
+
+;; Lazy evaluation helpers
+(def! lazy-cons (fn* (head tail-fn)
+  {:type :lazy-cons
+   :head head
+   :tail-fn tail-fn}))
+
+(def! lazy-first (fn* (lcons)
+  (:head lcons)))
+
+(def! lazy-rest (fn* (lcons)
+  ((:tail-fn lcons))))
+
+(def! take-lazy (fn* (n lcons)
+  (if (or (= n 0) (nil? lcons))
+    '()
+    (cons (lazy-first lcons)
+          (take-lazy (- n 1) (lazy-rest lcons))))))
+
+;; Infinite sequence of integers
+(def! integers-from (fn* (n)
+  (lazy-cons n (fn* () (integers-from (+ n 1))))))
+
+;; Performance monitoring
+(def! *performance-stats* (atom {}))
+
+(defmacro! with-timing (fn* (name & body)
+  `(let* (start-time (time-ms)
+          result (do ~@body)
+          end-time (time-ms)
+          elapsed (- end-time start-time))
+     (swap! *performance-stats* 
+            update ~name 
+            (fn* (stats)
+              (if stats
+                {:count (+ (:count stats) 1)
+                 :total (+ (:total stats) elapsed)
+                 :avg (/ (+ (:total stats) elapsed)
+                        (+ (:count stats) 1))}
+                {:count 1 :total elapsed :avg elapsed})))
+     result)))
+
+;; Test performance features
+(println "⚡ Testing Performance and Memory Management...")
+
+;; Test weak references
+(def! obj {:data "Important"})
+(def! weak-obj (make-weak-ref obj))
+(println "Weak ref data:" (weak-ref-get weak-obj))
+(weak-ref-clear weak-obj)
+(println "After clear:" (weak-ref-get weak-obj))
+
+;; Test memoization with limit
+(def! fib-memo 
+  (make-limited-memo 
+    (fn* (n)
+      (if (< n 2)
+        n
+        (+ (fib-memo (- n 1)) (fib-memo (- n 2)))))
+    10))
+
+(println "\nMemoized Fibonacci:")
+(println "fib(10) =" (fib-memo 10))
+
+;; Test lazy sequences
+(def! nats (integers-from 0))
+(println "\nFirst 10 natural numbers:" (take-lazy 10 nats))
+
+;; Test performance monitoring
+(with-timing "test-operation"
+  (reduce + 0 (range 1000)))
+
+(println "\nPerformance stats:" @*performance-stats*)
+
+;; Helper - time-ms simulation
+(def! time-ms (fn* ()
+  ;; Simulate time in milliseconds
+  0))
+
+;; Helper - range
+(def! range (fn* (n)
+  (let* (helper (fn* (i acc)
+                  (if (= i n)
+                    acc
+                    (helper (+ i 1) (cons i acc)))))
+    (reverse (helper 0 '())))))
+
+(def! reverse (fn* (lst)
+  (reduce (fn* (acc x) (cons x acc)) '() lst)))

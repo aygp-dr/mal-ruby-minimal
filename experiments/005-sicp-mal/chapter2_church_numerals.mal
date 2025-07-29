@@ -1,0 +1,45 @@
+;; SICP Exercise 2.6 - Church Numerals
+;; In honor of Alonzo Church, representations of
+;; non-negative integers using only procedures
+
+;; Church zero and successor
+(def! church-zero (fn* [f] (fn* [x] x)))
+
+(def! church-add-1 (fn* [n]
+  (fn* [f] (fn* [x] (f ((n f) x))))))
+
+;; Direct definitions
+(def! church-one (fn* [f] (fn* [x] (f x))))
+(def! church-two (fn* [f] (fn* [x] (f (f x)))))
+
+;; Verification that add-1 works
+;; (church-add-1 church-zero) should equal church-one
+;; Substitution proof as in SICP
+
+;; Addition of Church numerals
+(def! church-+ (fn* [m n]
+  (fn* [f] (fn* [x] ((m f) ((n f) x))))))
+
+;; Multiplication (Exercise continuation)
+(def! church-* (fn* [m n]
+  (fn* [f] (m (n f)))))
+
+;; Exponentiation
+(def! church-expt (fn* [m n]
+  (n m)))
+
+;; Convert Church numeral to integer for testing
+(def! church->int (fn* [n]
+  ((n (fn* [x] (+ x 1))) 0)))
+
+;; Tests
+(def! test-church-numerals (fn* []
+  (println "Church numeral tests:")
+  (println (str "  zero = " (church->int church-zero)))
+  (println (str "  one = " (church->int church-one)))
+  (println (str "  two = " (church->int church-two)))
+  (println (str "  1 + 1 = " (church->int (church-+ church-one church-one))))
+  (println (str "  2 * 3 = " (church->int (church-* church-two 
+                                                      (church-add-1 church-two)))))
+  (println (str "  2^3 = " (church->int (church-expt church-two 
+                                                     (church-add-1 church-two)))))))

@@ -1,0 +1,54 @@
+;; SICP 1.2.2 - Tree Recursion
+
+;; Fibonacci - Tree Recursive Process
+(def! fib (fn* [n]
+  (cond (= n 0) 0
+        (= n 1) 1
+        :else (+ (fib (- n 1))
+                 (fib (- n 2))))))
+
+;; Fibonacci - Iterative Process
+(def! fib-iter (fn* [a b count]
+  (if (= count 0)
+      b
+      (fib-iter (+ a b) a (- count 1)))))
+
+(def! fib-iterative (fn* [n]
+  (fib-iter 1 0 n)))
+
+;; Counting change - SICP classic example
+(def! count-change (fn* [amount]
+  (cc amount 5)))
+
+(def! cc (fn* [amount kinds-of-coins]
+  (cond (= amount 0) 1
+        (or (< amount 0) (= kinds-of-coins 0)) 0
+        :else (+ (cc amount (- kinds-of-coins 1))
+                 (cc (- amount (first-denomination kinds-of-coins))
+                     kinds-of-coins)))))
+
+(def! first-denomination (fn* [kinds-of-coins]
+  (cond (= kinds-of-coins 1) 1
+        (= kinds-of-coins 2) 5
+        (= kinds-of-coins 3) 10
+        (= kinds-of-coins 4) 25
+        (= kinds-of-coins 5) 50)))
+
+;; Exercise 1.11
+(def! f-recursive (fn* [n]
+  (if (< n 3)
+      n
+      (+ (f-recursive (- n 1))
+         (* 2 (f-recursive (- n 2)))
+         (* 3 (f-recursive (- n 3)))))))
+
+(def! f-iterative (fn* [n]
+  (f-iter 2 1 0 n)))
+
+(def! f-iter (fn* [a b c count]
+  (if (= count 0)
+      c
+      (f-iter (+ a (* 2 b) (* 3 c))
+              a
+              b
+              (- count 1)))))

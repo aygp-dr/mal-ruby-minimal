@@ -1,0 +1,59 @@
+;; SICP 3.3.1 - Mutable List Structure
+;; MAL doesn't have set-car!/set-cdr!, so we'll use atoms
+
+;; Mutable pairs using atoms
+(def! mcons (fn* [x y]
+  {:car (atom x) :cdr (atom y)}))
+
+(def! mcar (fn* [z]
+  @(:car z)))
+
+(def! mcdr (fn* [z]
+  @(:cdr z)))
+
+(def! set-mcar! (fn* [z new-value]
+  (reset! (:car z) new-value)))
+
+(def! set-mcdr! (fn* [z new-value]
+  (reset! (:cdr z) new-value)))
+
+;; Queue implementation
+(def! make-queue (fn* []
+  (let* [front-ptr (atom '())
+         rear-ptr (atom '())]
+    {:front front-ptr :rear rear-ptr})))
+
+(def! empty-queue? (fn* [queue]
+  (empty? @(:front queue))))
+
+(def! front-queue (fn* [queue]
+  (if (empty-queue? queue)
+      (throw "FRONT called with an empty queue")
+      (first @(:front queue)))))
+
+(def! insert-queue! (fn* [queue item]
+  (let* [new-pair (list item)]
+    (if (empty-queue? queue)
+        (do (reset! (:front queue) new-pair)
+            (reset! (:rear queue) new-pair))
+        (do (reset! (:rear queue) 
+                    (concat @(:rear queue) new-pair))))
+    queue)))
+
+(def! delete-queue! (fn* [queue]
+  (if (empty-queue? queue)
+      (throw "DELETE! called with an empty queue")
+      (reset! (:front queue) (rest @(:front queue))))
+  queue))
+
+;; Exercise 3.12-3.20 - Various mutable structure exercises
+;; Table implementation
+(def! make-table (fn* []
+  (atom {})))
+
+(def! lookup (fn* [key table]
+  (get @table key nil)))
+
+(def! insert! (fn* [key value table]
+  (swap! table assoc key value)
+  'ok))

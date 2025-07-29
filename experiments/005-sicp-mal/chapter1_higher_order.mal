@@ -1,0 +1,50 @@
+;; SICP 1.3.1 - Procedures as Arguments
+
+;; Summation abstraction
+(def! sum (fn* [term a next b]
+  (if (> a b)
+      0
+      (+ (term a)
+         (sum term (next a) next b)))))
+
+;; Using sum to define specific sums
+(def! identity (fn* [x] x))
+
+(def! sum-integers (fn* [a b]
+  (sum identity a inc b)))
+
+(def! cube (fn* [x] (* x x x)))
+
+(def! sum-cubes (fn* [a b]
+  (sum cube a inc b)))
+
+;; Pi approximation using sum
+(def! pi-sum (fn* [a b]
+  (sum pi-term a pi-next b)))
+
+(def! pi-term (fn* [x]
+  (/ 1.0 (* x (+ x 2)))))
+
+(def! pi-next (fn* [x]
+  (+ x 4)))
+
+;; Definite integral approximation
+(def! integral (fn* [f a b dx]
+  (* (sum f (+ a (/ dx 2.0))
+            (fn* [x] (+ x dx))
+            b)
+     dx)))
+
+;; Simpson's Rule - Exercise 1.29
+(def! simpson (fn* [f a b n]
+  (let* [h (/ (- b a) n)
+         y (fn* [k] (f (+ a (* k h))))
+         simpson-term (fn* [k]
+           (* (cond (or (= k 0) (= k n)) 1
+                    (odd? k) 4
+                    :else 2)
+              (y k)))]
+    (* (/ h 3) (sum simpson-term 0 inc n)))))
+
+(def! odd? (fn* [n] (= (mod n 2) 1)))
+(def! even? (fn* [n] (= (mod n 2) 0)))

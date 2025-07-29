@@ -1,0 +1,32 @@
+;; SICP Chapter 1.1 - Basic Elements
+;; Translated to MAL Lisp
+
+;; 1.1.1 Expressions
+(+ 137 349)  ; => 486
+(- 1000 334) ; => 666
+(* 5 99)     ; => 495
+(/ 10 5)     ; => 2
+(+ 2.7 10)   ; => 12.7
+
+;; Nested combinations
+(+ (* 3 5) (- 10 6))  ; => 19
+
+;; 1.1.2 Naming and the Environment
+(def! size 2)
+(def! pi 3.14159)
+(def! radius 10)
+(def! circumference (* 2 pi radius))  ; => 62.8318
+
+;; 1.1.4 Compound Procedures
+(def! square (fn* [x] (* x x)))
+(square 21)  ; => 441
+(square (+ 2 5))  ; => 49
+(square (square 3))  ; => 81
+
+(def! sum-of-squares (fn* [x y]
+  (+ (square x) (square y))))
+(sum-of-squares 3 4)  ; => 25
+
+(def! f (fn* [a]
+  (sum-of-squares (+ a 1) (* a 2))))
+(f 5)  ; => 136

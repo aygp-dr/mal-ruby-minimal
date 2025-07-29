@@ -1,0 +1,55 @@
+;; SICP Examples Test Runner
+;; Run all examples and verify functionality
+
+(println "Loading SICP Examples...")
+(println "========================\n")
+
+;; Chapter 1
+(println "Chapter 1 - Building Abstractions with Procedures")
+(println "-------------------------------------------------")
+(load-file "chapter1_basics.mal")
+(load-file "chapter1_conditionals.mal")
+(load-file "chapter1_recursion.mal")
+(println (str "  factorial(5) = " (factorial 5)))
+(println (str "  fibonacci(10) = " (fib 10)))
+(load-file "chapter1_tree_recursion.mal")
+(println (str "  count-change(100) = " (count-change 100)))
+(load-file "chapter1_higher_order.mal")
+(println (str "  pi approximation = " (* 8 (pi-sum 1 10000))))
+(load-file "chapter1_lambda.mal")
+(load-file "chapter1_procedures_as_values.mal")
+(println (str "  sqrt(2) = " (sqrt-newton 2)))
+
+;; Chapter 2
+(println "\nChapter 2 - Building Abstractions with Data")
+(println "--------------------------------------------")
+(load-file "chapter2_church_numerals.mal")
+(test-church-numerals)
+(load-file "chapter2_pairs.mal")
+(println (str "  Procedural pair test: " 
+              (car-proc (cons-proc 1 2))))
+(load-file "chapter2_lists.mal")
+(println (str "  Reverse '(1 2 3 4) = " (reverse '(1 2 3 4))))
+(load-file "chapter2_trees.mal")
+(println (str "  Count leaves '((1 2) (3 4)) = " 
+              (count-leaves '((1 2) (3 4)))))
+(load-file "chapter2_symbolic.mal")
+(test-deriv)
+
+;; Chapter 3
+(println "\nChapter 3 - Modularity, Objects, and State")
+(println "-------------------------------------------")
+(load-file "chapter3_state.mal")
+(def! acc (make-account 100))
+(println (str "  Account withdraw 50: " ((acc 'withdraw) 50)))
+(println (str "  Account balance: " (acc 'balance)))
+
+;; Chapter 4
+(println "\nChapter 4 - Metalinguistic Abstraction")
+(println "---------------------------------------")
+(load-file "chapter4_evaluator.mal")
+(println "  Metacircular evaluator loaded")
+(println (str "  eval '(+ 1 2) = " 
+              (eval-sicp '(+ 1 2) the-global-environment)))
+
+(println "\nAll SICP examples loaded successfully! 🎉")

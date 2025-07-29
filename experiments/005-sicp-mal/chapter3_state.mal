@@ -1,0 +1,65 @@
+;; SICP 3.1 - Assignment and Local State
+;; Note: MAL uses atoms for mutable state
+
+;; Bank account with local state
+(def! make-account (fn* [balance]
+  (let* [bal (atom balance)]
+    (fn* [m]
+      (cond (= m 'withdraw)
+              (fn* [amount]
+                (if (>= @bal amount)
+                    (do (swap! bal - amount)
+                        @bal)
+                    "Insufficient funds"))
+            (= m 'deposit)
+              (fn* [amount]
+                (swap! bal + amount)
+                @bal)
+            (= m 'balance) @bal
+            :else (throw "Unknown request -- MAKE-ACCOUNT"))))))
+
+;; Usage:
+;; (def! acc (make-account 100))
+;; ((acc 'withdraw) 50)  ; => 50
+;; ((acc 'deposit) 40)   ; => 90
+;; (acc 'balance)        ; => 90
+
+;; Exercise 3.1 - Accumulator
+(def! make-accumulator (fn* [initial]
+  (let* [sum (atom initial)]
+    (fn* [value]
+      (swap! sum + value)
+      @sum))))
+
+;; Exercise 3.2 - Monitored procedures
+(def! make-monitored (fn* [f]
+  (let* [count (atom 0)]
+    (fn* [arg]
+      (if (= arg 'how-many-calls?)
+          @count
+          (do (swap! count inc)
+              (f arg)))))))
+
+;; Exercise 3.3 - Password-protected account
+(def! make-account-password (fn* [balance password]
+  (let* [bal (atom balance)
+         incorrect-attempts (atom 0)]
+    (fn* [pass m]
+      (if (= pass password)
+          (do (reset! incorrect-attempts 0)
+              (cond (= m 'withdraw)
+                      (fn* [amount]
+                        (if (>= @bal amount)
+                            (do (swap! bal - amount)
+                                @bal)
+                            "Insufficient funds"))
+                    (= m 'deposit)
+                      (fn* [amount]
+                        (swap! bal + amount)
+                        @bal)
+                    (= m 'balance) @bal
+                    :else (throw "Unknown request")))
+          (do (swap! incorrect-attempts inc)
+              (if (>= @incorrect-attempts 7)
+                  (fn* [x] "Call the cops!")
+                  (fn* [x] "Incorrect password"))))))))

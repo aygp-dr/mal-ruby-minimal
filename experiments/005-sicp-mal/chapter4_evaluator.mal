@@ -1,0 +1,202 @@
+;; SICP 4.1 - The Metacircular Evaluator
+;; A Lisp interpreter written in Lisp (MAL)
+
+;; Expression types
+(def! self-evaluating? (fn* [exp]
+  (or (number? exp) (string? exp))))
+
+(def! variable? symbol?)
+
+(def! quoted? (fn* [exp]
+  (and (list? exp) (= (first exp) 'quote))))
+
+(def! text-of-quotation (fn* [exp] (nth exp 1)))
+
+(def! assignment? (fn* [exp]
+  (and (list? exp) (= (first exp) 'set!))))
+
+(def! assignment-variable (fn* [exp] (nth exp 1)))
+(def! assignment-value (fn* [exp] (nth exp 2)))
+
+(def! definition? (fn* [exp]
+  (and (list? exp) (= (first exp) 'define))))
+
+(def! definition-variable (fn* [exp]
+  (if (symbol? (nth exp 1))
+      (nth exp 1)
+      (first (nth exp 1)))))
+
+(def! definition-value (fn* [exp]
+  (if (symbol? (nth exp 1))
+      (nth exp 2)
+      (make-lambda (rest (nth exp 1))
+                   (rest (rest exp))))))
+
+(def! lambda? (fn* [exp]
+  (and (list? exp) (= (first exp) 'lambda))))
+
+(def! lambda-parameters (fn* [exp] (nth exp 1)))
+(def! lambda-body (fn* [exp] (rest (rest exp))))
+
+(def! make-lambda (fn* [parameters body]
+  (cons 'lambda (cons parameters body))))
+
+(def! if? (fn* [exp]
+  (and (list? exp) (= (first exp) 'if))))
+
+(def! if-predicate (fn* [exp] (nth exp 1)))
+(def! if-consequent (fn* [exp] (nth exp 2)))
+(def! if-alternative (fn* [exp]
+  (if (> (count exp) 3)
+      (nth exp 3)
+      'false)))
+
+(def! begin? (fn* [exp]
+  (and (list? exp) (= (first exp) 'begin))))
+
+(def! begin-actions (fn* [exp] (rest exp)))
+(def! last-exp? (fn* [seq] (empty? (rest seq))))
+(def! first-exp first)
+(def! rest-exps rest)
+
+(def! application? list?)
+(def! operator first)
+(def! operands rest)
+
+;; Environment operations (simplified)
+(def! enclosing-environment (fn* [env] (:outer env)))
+(def! first-frame (fn* [env] env))
+(def! the-empty-environment {})
+
+(def! make-frame (fn* [variables values]
+  (zipmap (map str variables) values)))
+
+(def! frame-variables (fn* [frame] (keys frame)))
+(def! frame-values (fn* [frame] (vals frame)))
+
+(def! add-binding-to-frame! (fn* [var val frame]
+  (assoc frame (str var) val)))
+
+(def! extend-environment (fn* [vars vals base-env]
+  (if (= (count vars) (count vals))
+      (assoc (make-frame vars vals) :outer base-env)
+      (if (< (count vars) (count vals))
+          (throw "Too many arguments supplied")
+          (throw "Too few arguments supplied")))))
+
+(def! lookup-variable-value (fn* [var env]
+  (let* [var-str (str var)]
+    (if (contains? env var-str)
+        (get env var-str)
+        (if (contains? env :outer)
+            (lookup-variable-value var (:outer env))
+            (throw (str "Unbound variable: " var)))))))
+
+(def! set-variable-value! (fn* [var val env]
+  (let* [var-str (str var)]
+    (if (contains? env var-str)
+        (assoc env var-str val)
+        (if (contains? env :outer)
+            (set-variable-value! var val (:outer env))
+            (throw (str "Unbound variable -- SET!: " var)))))))
+
+(def! define-variable! (fn* [var val env]
+  (assoc env (str var) val)))
+
+;; Evaluator
+(def! eval-sicp (fn* [exp env]
+  (cond (self-evaluating? exp) exp
+        (variable? exp) (lookup-variable-value exp env)
+        (quoted? exp) (text-of-quotation exp)
+        (assignment? exp) (eval-assignment exp env)
+        (definition? exp) (eval-definition exp env)
+        (if? exp) (eval-if exp env)
+        (lambda? exp)
+          (make-procedure (lambda-parameters exp)
+                          (lambda-body exp)
+                          env)
+        (begin? exp)
+          (eval-sequence (begin-actions exp) env)
+        (application? exp)
+          (apply-sicp (eval-sicp (operator exp) env)
+                      (list-of-values (operands exp) env))
+        :else
+          (throw (str "Unknown expression type -- EVAL: " exp)))))
+
+(def! apply-sicp (fn* [procedure arguments]
+  (cond (primitive-procedure? procedure)
+          (apply-primitive-procedure procedure arguments)
+        (compound-procedure? procedure)
+          (eval-sequence
+            (procedure-body procedure)
+            (extend-environment
+              (procedure-parameters procedure)
+              arguments
+              (procedure-environment procedure)))
+        :else
+          (throw "Unknown procedure type -- APPLY"))))
+
+(def! list-of-values (fn* [exps env]
+  (if (empty? exps)
+      '()
+      (cons (eval-sicp (first exps) env)
+            (list-of-values (rest exps) env)))))
+
+(def! eval-if (fn* [exp env]
+  (if (true? (eval-sicp (if-predicate exp) env))
+      (eval-sicp (if-consequent exp) env)
+      (eval-sicp (if-alternative exp) env))))
+
+(def! eval-sequence (fn* [exps env]
+  (if (last-exp? exps)
+      (eval-sicp (first-exp exps) env)
+      (do (eval-sicp (first-exp exps) env)
+          (eval-sequence (rest-exps exps) env)))))
+
+(def! eval-assignment (fn* [exp env]
+  (set-variable-value! (assignment-variable exp)
+                       (eval-sicp (assignment-value exp) env)
+                       env)
+  'ok))
+
+(def! eval-definition (fn* [exp env]
+  (define-variable! (definition-variable exp)
+                    (eval-sicp (definition-value exp) env)
+                    env)
+  'ok))
+
+;; Procedures
+(def! make-procedure (fn* [parameters body env]
+  (list 'procedure parameters body env)))
+
+(def! compound-procedure? (fn* [p]
+  (and (list? p) (= (first p) 'procedure))))
+
+(def! procedure-parameters (fn* [p] (nth p 1)))
+(def! procedure-body (fn* [p] (nth p 2)))
+(def! procedure-environment (fn* [p] (nth p 3)))
+
+;; Primitive procedures (simplified)
+(def! primitive-procedure? (fn* [proc]
+  (contains? primitive-procedures proc)))
+
+(def! primitive-procedures
+  {+ + - - * * / / = = < < > >})
+
+(def! apply-primitive-procedure (fn* [proc args]
+  (apply (get primitive-procedures proc) args)))
+
+(def! true? (fn* [x] (not (false? x))))
+(def! false? (fn* [x] (= x false)))
+
+;; Setup and test
+(def! setup-environment (fn* []
+  (let* [initial-env (extend-environment 
+                       (keys primitive-procedures)
+                       (vals primitive-procedures)
+                       the-empty-environment)]
+    (define-variable! 'true true initial-env)
+    (define-variable! 'false false initial-env)
+    initial-env)))
+
+(def! the-global-environment (setup-environment))

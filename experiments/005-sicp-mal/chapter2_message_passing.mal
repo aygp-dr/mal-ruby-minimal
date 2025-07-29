@@ -1,0 +1,67 @@
+;; SICP 2.4 - Multiple Representations using Message Passing
+
+;; Complex numbers - message passing style
+(def! make-from-real-imag (fn* [x y]
+  (let* [dispatch (fn* [op]
+                    (cond (= op 'real-part) x
+                          (= op 'imag-part) y
+                          (= op 'magnitude)
+                            (sqrt (+ (square x) (square y)))
+                          (= op 'angle) (atan y x)
+                          :else
+                            (throw "Unknown op -- MAKE-FROM-REAL-IMAG")))]
+    dispatch)))
+
+(def! make-from-mag-ang (fn* [r a]
+  (let* [dispatch (fn* [op]
+                    (cond (= op 'real-part) (* r (cos a))
+                          (= op 'imag-part) (* r (sin a))
+                          (= op 'magnitude) r
+                          (= op 'angle) a
+                          :else
+                            (throw "Unknown op -- MAKE-FROM-MAG-ANG")))]
+    dispatch)))
+
+;; Generic operations
+(def! real-part (fn* [z] (z 'real-part)))
+(def! imag-part (fn* [z] (z 'imag-part)))
+(def! magnitude (fn* [z] (z 'magnitude)))
+(def! angle (fn* [z] (z 'angle)))
+
+;; Exercise 2.75 - Make-from-mag-ang in message-passing style
+;; (Already implemented above)
+
+;; Additional complex number operations
+(def! add-complex (fn* [z1 z2]
+  (make-from-real-imag (+ (real-part z1) (real-part z2))
+                       (+ (imag-part z1) (imag-part z2)))))
+
+(def! sub-complex (fn* [z1 z2]
+  (make-from-real-imag (- (real-part z1) (real-part z2))
+                       (- (imag-part z1) (imag-part z2)))))
+
+(def! mul-complex (fn* [z1 z2]
+  (make-from-mag-ang (* (magnitude z1) (magnitude z2))
+                     (+ (angle z1) (angle z2)))))
+
+(def! div-complex (fn* [z1 z2]
+  (make-from-mag-ang (/ (magnitude z1) (magnitude z2))
+                     (- (angle z1) (angle z2)))))
+
+;; Math functions (approximations for MAL)
+(def! sqrt (fn* [x]
+  (if (< x 0)
+      (throw "sqrt of negative number")
+      (fixed-point (average-damp (fn* [y] (/ x y))) 1.0))))
+
+(def! cos (fn* [x] 
+  ;; Taylor series approximation
+  (- 1 (/ (* x x) 2) (/ (* x x x x) 24))))
+
+(def! sin (fn* [x]
+  ;; Taylor series approximation  
+  (- x (/ (* x x x) 6) (/ (* x x x x x) 120))))
+
+(def! atan (fn* [y x]
+  ;; Simple approximation
+  (/ y (+ x 0.0001))))  ; Avoid division by zero

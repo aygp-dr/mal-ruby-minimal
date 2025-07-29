@@ -1,0 +1,96 @@
+;; Chapter 9: Hotpatching and Live Updates
+;; Runtime code modification techniques
+
+;; Function redefinition with history
+(def! *function-history* (atom {}))
+
+(defmacro! defun-hotpatch (fn* (name args & body)
+  `(do
+     ;; Save current definition to history
+     (when (defined? '~name)
+       (swap! *function-history* 
+              update ~(keyword (str name))
+              (fn* (hist) (cons ~name (or hist '())))))
+     
+     ;; Define new function
+     (def! ~name (fn* ~args ~@body))
+     
+     ;; Return name for chaining
+     '~name)))
+
+;; Helper to check if symbol is defined
+(def! defined? (fn* (sym)
+  (try
+    (do (eval sym) true)
+    (catch _ false))))
+
+;; Rollback to previous version
+(def! rollback-function (fn* (name)
+  (let* (history (get @*function-history* (keyword (str name))))
+    (if (and history (not (empty? history)))
+      (do
+        (eval `(def! ~name ~(first history)))
+        (swap! *function-history* 
+               update (keyword (str name)) rest)
+        (str "Rolled back " name))
+      (str "No history for " name)))))
+
+;; Object pooling for memory management
+(def! make-object-pool (fn* (factory reset-fn initial-size)
+  (let* (pool (atom (repeatedly initial-size factory))
+         in-use (atom #{}))
+    {:acquire (fn* ()
+                (let* (available @pool)
+                  (if (empty? available)
+                    (factory)  ; Create new if pool empty
+                    (let* (obj (first available))
+                      (swap! pool rest)
+                      (swap! in-use conj obj)
+                      obj))))
+     :release (fn* (obj)
+                (when (contains? @in-use obj)
+                  (reset-fn obj)
+                  (swap! in-use disj obj)
+                  (swap! pool conj obj)))
+     :stats (fn* ()
+              {:available (count @pool)
+               :in-use (count @in-use)})})))
+
+;; Test hotpatching
+(println "🔥 Testing Hotpatching and Live Updates...")
+
+;; Define initial function
+(defun-hotpatch greet (name)
+  (str "Hello, " name "!"))
+
+(println "Original:" (greet "World"))
+
+;; Hotpatch with new version
+(defun-hotpatch greet (name)
+  (str "Hi there, " name "! How are you?"))
+
+(println "Updated:" (greet "World"))
+
+;; Rollback
+(println (rollback-function 'greet))
+(println "After rollback:" (greet "World"))
+
+;; Test object pool
+(def! string-pool 
+  (make-object-pool 
+    (fn* () (atom ""))
+    (fn* (s) (reset! s ""))
+    5))
+
+(println "\nObject pool stats:" ((:stats string-pool)))
+(def! s1 ((:acquire string-pool)))
+(reset! s1 "Used string")
+(println "After acquire:" ((:stats string-pool)))
+((:release string-pool) s1)
+(println "After release:" ((:stats string-pool)))
+
+;; Helper for repeatedly
+(def! repeatedly (fn* (n f)
+  (if (= n 0)
+    '()
+    (cons (f) (repeatedly (- n 1) f)))))

@@ -1,0 +1,52 @@
+;; SICP 2.1.3 - Procedural Representation of Pairs
+
+;; Exercise 2.4 - Alternative pair representation
+(def! cons-proc (fn* [x y]
+  (fn* [m] (m x y))))
+
+(def! car-proc (fn* [z]
+  (z (fn* [p q] p))))
+
+(def! cdr-proc (fn* [z]
+  (z (fn* [p q] q))))
+
+;; Verification by substitution (as shown in SICP)
+;; (car-proc (cons-proc x y))
+;; = (car-proc (fn* [m] (m x y)))
+;; = ((fn* [m] (m x y)) (fn* [p q] p))
+;; = ((fn* [p q] p) x y)
+;; = x
+
+;; Exercise 2.5 - Pairs as products of powers
+(def! cons-num (fn* [a b]
+  (* (expt 2 a) (expt 3 b))))
+
+(def! car-num (fn* [z]
+  (if (= (mod z 2) 0)
+      (+ 1 (car-num (/ z 2)))
+      0)))
+
+(def! cdr-num (fn* [z]
+  (if (= (mod z 3) 0)
+      (+ 1 (cdr-num (/ z 3)))
+      0)))
+
+;; Helper for exponentiation
+(def! expt (fn* [base exp]
+  (if (= exp 0)
+      1
+      (* base (expt base (- exp 1))))))
+
+;; Exercise 2.6 extension - Church pairs
+(def! church-cons (fn* [x y]
+  (fn* [m] (m x y))))
+
+(def! church-car (fn* [z]
+  (z church-true)))
+
+(def! church-cdr (fn* [z]
+  (z church-false)))
+
+;; Where church-true/false are from previous section
+(def! church-true (fn* [x y] x))
+(def! church-false (fn* [x y] y))

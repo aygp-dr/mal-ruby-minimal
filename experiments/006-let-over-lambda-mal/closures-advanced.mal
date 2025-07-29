@@ -1,0 +1,73 @@
+;; Chapter 2: Closures
+;; Advanced closure patterns from Let Over Lambda
+
+;; Basic closure example - counter
+(def! make-counter (fn* (initial-value)
+  (let* (count initial-value)
+    (fn* ()
+      (def! count (+ count 1))
+      count))))
+
+;; Multiple closures sharing state - bank account
+(def! make-bank-account (fn* (initial-balance)
+  (let* (balance initial-balance)
+    (list
+      (fn* (amount)  ; withdraw
+        (if (>= balance amount)
+          (do (def! balance (- balance amount))
+              balance)
+          "Insufficient funds"))
+      (fn* (amount)  ; deposit
+        (do (def! balance (+ balance amount))
+            balance))
+      (fn* ()        ; check balance
+        balance)))))
+
+;; Let over lambda pattern for encapsulation
+(def! make-accumulator (fn* ()
+  (let* (sum 0)
+    (fn* (n)
+      (def! sum (+ sum n))))))
+
+;; Closure factory with customizable behavior
+(def! make-multiplier-factory (fn* (factor)
+  (fn* (x) (* x factor))))
+
+;; Dynamic scope simulation using closures
+(def! *dynamic-vars* (atom {}))
+
+(def! with-dynamic-binding (fn* (var value body)
+  (let* (old-value (get @*dynamic-vars* var))
+    (do
+      (swap! *dynamic-vars* assoc var value)
+      (let* (result (body))
+        (if old-value
+          (swap! *dynamic-vars* assoc var old-value)
+          (swap! *dynamic-vars* dissoc var))
+        result)))))
+
+;; Dynamic variable accessor
+(def! dynamic-get (fn* (var)
+  (get @*dynamic-vars* var)))
+
+;; Test closures
+(def! test-closures (fn* ()
+  (println "🔒 Testing Closure Patterns...")
+  ;; Counter test
+  (let* (counter (make-counter 10))
+    (assert (= (counter) 11))
+    (assert (= (counter) 12)))
+  
+  ;; Bank account test
+  (let* (account (make-bank-account 100)
+         withdraw (first account)
+         deposit (second account)
+         balance (nth account 2))
+    (assert (= (withdraw 30) 70))
+    (assert (= (deposit 20) 90))
+    (assert (= (balance) 90)))
+  
+  (println "✅ Closure tests pass")))
+
+;; Run tests when loaded
+(test-closures)

@@ -1,0 +1,35 @@
+;; SICP 1.2.1 - Linear Recursion and Iteration
+
+;; Factorial - Recursive Process
+(def! factorial (fn* [n]
+  (if (= n 1)
+      1
+      (* n (factorial (- n 1))))))
+
+;; Factorial - Iterative Process
+(def! fact-iter (fn* [product counter max-count]
+  (if (> counter max-count)
+      product
+      (fact-iter (* counter product)
+                 (+ counter 1)
+                 max-count))))
+
+(def! factorial-iter (fn* [n]
+  (fact-iter 1 1 n)))
+
+;; Exercise 1.9 - Two models of addition
+;; Recursive process
+(def! plus-recursive (fn* [a b]
+  (if (= a 0)
+      b
+      (inc (plus-recursive (dec a) b)))))
+
+;; Iterative process
+(def! plus-iterative (fn* [a b]
+  (if (= a 0)
+      b
+      (plus-iterative (dec a) (inc b)))))
+
+;; Helper functions for above
+(def! inc (fn* [n] (+ n 1)))
+(def! dec (fn* [n] (- n 1)))

@@ -1,0 +1,35 @@
+;; SICP 2.2.2 - Hierarchical Structures
+
+;; Count leaves in a tree
+(def! count-leaves (fn* [x]
+  (cond (nil? x) 0
+        (not (list? x)) 1
+        :else (+ (count-leaves (first x))
+                 (count-leaves (rest x))))))
+
+;; Exercise 2.24-2.29 - Trees and mobile
+(def! deep-reverse (fn* [items]
+  (cond (not (list? items)) items
+        (empty? items) '()
+        :else (append (deep-reverse (rest items))
+                      (list (deep-reverse (first items)))))))
+
+;; Tree mapping
+(def! tree-map (fn* [proc tree]
+  (map-sicp (fn* [sub-tree]
+              (if (list? sub-tree)
+                  (tree-map proc sub-tree)
+                  (proc sub-tree)))
+            tree)))
+
+;; Exercise 2.31
+(def! square-tree (fn* [tree]
+  (tree-map square tree)))
+
+;; Exercise 2.32 - Subsets
+(def! subsets (fn* [s]
+  (if (empty? s)
+      (list '())
+      (let* [rest (subsets (rest s))]
+        (append rest (map-sicp (fn* [x] (cons (first s) x))
+                               rest))))))

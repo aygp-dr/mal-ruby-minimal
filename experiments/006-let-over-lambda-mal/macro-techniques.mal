@@ -1,0 +1,69 @@
+;; Chapter 3: Macro Basics
+;; Fundamental macro techniques from Let Over Lambda
+
+;; Unit testing macro
+(defmacro! unit-test (fn* (name & tests)
+  `(do
+     (println "Running test:" ~name)
+     (let* (passed 0
+            total ~(count tests))
+       ~@(map (fn* (test)
+                `(if ~test
+                   (def! passed (+ passed 1))
+                   (println "FAILED:" '~test)))
+              tests)
+       (println "Passed:" passed "out of" total)))))
+
+;; Simple timing macro
+(defmacro! time-it (fn* (expr)
+  `(let* (start (time-ms)
+          result ~expr
+          end (time-ms))
+     (println "Execution time:" (- end start) "ms")
+     result)))
+
+;; Conditional compilation
+(def! *debug-mode* true)
+
+(defmacro! when-debug (fn* (& body)
+  (if *debug-mode*
+    `(do ~@body)
+    nil)))
+
+;; Automatic getter/setter generation
+(defmacro! defstruct (fn* (name & fields)
+  `(do
+     ;; Constructor
+     (def! ~(symbol (str "make-" name)) 
+       (fn* ~fields
+         (list ~@(map (fn* (field) `'~field) fields)
+               ~@fields)))
+     
+     ;; Getters
+     ~@(map-indexed (fn* (i field)
+                      `(def! ~(symbol (str name "-" field))
+                         (fn* (obj) (nth obj ~(+ i (count fields))))))
+                    fields)
+     
+     ;; Setters  
+     ~@(map-indexed (fn* (i field)
+                      `(def! ~(symbol (str "set-" name "-" field "!"))
+                         (fn* (obj val)
+                           (assoc obj ~(+ i (count fields)) val))))
+                    fields))))
+
+;; Test macros
+(println "🎭 Testing Macro Patterns...")
+(unit-test "Basic arithmetic tests"
+  (= (+ 2 2) 4)
+  (= (* 3 4) 12)
+  (= (/ 10 2) 5))
+
+(when-debug
+  (println "Debug mode is enabled"))
+
+;; Test struct generation
+(defstruct point x y)
+(def! p1 (make-point 3 4))
+(println "Point x:" (point-x p1))
+(println "Point y:" (point-y p1))

@@ -1,0 +1,32 @@
+;; SICP 1.3.2 - Constructing Procedures Using Lambda
+
+;; Pi sum using lambda
+(def! pi-sum-lambda (fn* [a b]
+  (sum (fn* [x] (/ 1.0 (* x (+ x 2))))
+       a
+       (fn* [x] (+ x 4))
+       b)))
+
+;; Integral with lambda
+(def! integral-lambda (fn* [f a b dx]
+  (let* [add-dx (fn* [x] (+ x dx))]
+    (* (sum f (+ a (/ dx 2)) add-dx b)
+       dx))))
+
+;; Let as lambda application
+;; MAL already has let*, but here's how it works conceptually
+(def! f-with-let (fn* [x y]
+  (let* [a (+ 1 (* x y))
+         b (- 1 y)]
+    (+ (* x (square a))
+       (* y b)
+       (* a b)))))
+
+;; Equivalent using lambda (for demonstration)
+(def! f-with-lambda (fn* [x y]
+  ((fn* [a b]
+     (+ (* x (square a))
+        (* y b)
+        (* a b)))
+   (+ 1 (* x y))
+   (- 1 y))))

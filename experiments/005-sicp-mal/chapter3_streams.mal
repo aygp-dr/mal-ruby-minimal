@@ -1,0 +1,72 @@
+;; SICP 3.5 - Streams (lazy lists)
+;; MAL doesn't have built-in delay/force, so we'll simulate
+
+;; Delay and force implementation
+(def! delay (fn* [exp]
+  (let* [already-run? (atom false)
+         result (atom nil)]
+    (fn* []
+      (if (not @already-run?)
+          (do (reset! result exp)
+              (reset! already-run? true)))
+      @result))))
+
+(def! force (fn* [delayed-object]
+  (delayed-object)))
+
+;; Stream implementation
+(def! the-empty-stream '())
+(def! stream-null? empty?)
+
+(def! cons-stream (fn* [a b]
+  (cons a (delay b))))
+
+(def! stream-car first)
+(def! stream-cdr (fn* [stream]
+  (force (rest stream))))
+
+;; Stream operations
+(def! stream-ref (fn* [s n]
+  (if (= n 0)
+      (stream-car s)
+      (stream-ref (stream-cdr s) (- n 1)))))
+
+(def! stream-map (fn* [proc s]
+  (if (stream-null? s)
+      the-empty-stream
+      (cons-stream (proc (stream-car s))
+                   (stream-map proc (stream-cdr s))))))
+
+(def! stream-for-each (fn* [proc s]
+  (if (not (stream-null? s))
+      (do (proc (stream-car s))
+          (stream-for-each proc (stream-cdr s))))))
+
+(def! display-stream (fn* [s]
+  (stream-for-each println s)))
+
+(def! stream-enumerate-interval (fn* [low high]
+  (if (> low high)
+      the-empty-stream
+      (cons-stream low
+                   (stream-enumerate-interval (+ low 1) high)))))
+
+;; Infinite streams
+(def! integers-starting-from (fn* [n]
+  (cons-stream n (integers-starting-from (+ n 1)))))
+
+(def! integers (integers-starting-from 1))
+
+;; Sieve of Eratosthenes
+(def! divisible? (fn* [x y]
+  (= (mod x y) 0)))
+
+(def! sieve (fn* [stream]
+  (cons-stream
+    (stream-car stream)
+    (sieve (stream-filter
+             (fn* [x]
+               (not (divisible? x (stream-car stream))))
+             (stream-cdr stream))))))
+
+(def! primes (sieve (integers-starting-from 2)))

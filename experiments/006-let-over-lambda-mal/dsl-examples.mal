@@ -1,0 +1,64 @@
+;; Chapter 6: Domain Specific Languages
+;; Creating embedded DSLs in MAL
+
+;; Simple HTML generation DSL
+(def! html-attrs (fn* (attrs)
+  (if (empty? attrs)
+    ""
+    (apply str (map (fn* (pair)
+                      (str " " (name (first pair)) "=\"" (second pair) "\""))
+                    attrs)))))
+
+(def! html-element (fn* (tag attrs & content)
+  (str "<" (name tag) (html-attrs attrs) ">"
+       (apply str content)
+       "</" (name tag) ">")))
+
+;; HTML DSL helper macros
+(defmacro! div (fn* (attrs & content)
+  `(html-element :div ~attrs ~@content)))
+
+(defmacro! span (fn* (attrs & content)
+  `(html-element :span ~attrs ~@content)))
+
+(defmacro! p (fn* (attrs & content)
+  `(html-element :p ~attrs ~@content)))
+
+;; Query DSL for data manipulation
+(def! where (fn* (pred coll)
+  (filter pred coll)))
+
+(def! select (fn* (selector coll)
+  (map selector coll)))
+
+(def! order-by (fn* (key-fn coll)
+  (sort (fn* (a b) (< (key-fn a) (key-fn b))) coll)))
+
+;; Pipeline macro for composing queries
+(defmacro! query-> (fn* (data & operations)
+  (reduce (fn* (acc op)
+            (cons (first op) (cons acc (rest op))))
+          data
+          operations)))
+
+;; Test DSLs
+(println "🌐 Testing Domain Specific Languages...")
+
+;; HTML DSL test
+(println "HTML generation:")
+(println (div {:class "container"}
+           (p {:id "intro"} "Hello, World!")
+           (span {:style "color: red"} "Important!")))
+
+;; Query DSL test
+(def! people
+  [{:name "Alice" :age 30}
+   {:name "Bob" :age 25}
+   {:name "Charlie" :age 35}])
+
+(println "\nQuery DSL:")
+(println "Adults over 28:"
+         (query-> people
+           (where (fn* (p) (> (:age p) 28)))
+           (select (fn* (p) (:name p)))
+           (order-by identity)))

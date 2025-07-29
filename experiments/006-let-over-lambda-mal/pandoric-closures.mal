@@ -1,0 +1,42 @@
+;; Chapter 8: Pandoric Macros
+;; Closures with backdoor access to internals
+
+;; Helper for generating unique symbols
+(def! gensym-counter (atom 0))
+(def! gensym (fn* ()
+  (symbol (str "G__" (swap! gensym-counter inc)))))
+
+;; Simplified pandoric macro
+(defmacro! defpan-simple (fn* (name args & body)
+  `(def! ~name
+     (let* ~args
+       (fn* (msg)
+         (case msg
+           :get-balance balance
+           :set-balance (fn* (new-val) (def! balance new-val))
+           :default (do ~@body)))))))
+
+;; Example: Pandoric bank account
+(defpan-simple pandoric-account (balance 100)
+  (case msg
+    :withdraw (fn* (amount)
+                (if (>= balance amount)
+                  (do (def! balance (- balance amount))
+                      balance)
+                  "Insufficient funds"))
+    :deposit (fn* (amount)
+               (do (def! balance (+ balance amount))
+                   balance))))
+
+;; Test pandoric closures
+(println "🔐 Testing Pandoric Patterns...")
+
+;; Access internal state
+(println "Initial balance:" (pandoric-account :get-balance))
+
+;; Use normal interface
+(println "Withdraw 30:" ((pandoric-account :withdraw) 30))
+
+;; Backdoor access to change balance
+((pandoric-account :set-balance) 1000)
+(println "Balance after backdoor:" (pandoric-account :get-balance))

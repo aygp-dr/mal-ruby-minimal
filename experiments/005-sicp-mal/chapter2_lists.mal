@@ -1,0 +1,72 @@
+;; SICP 2.2.1 - Representing Sequences
+
+;; List operations (MAL has built-in list ops, but let's implement SICP style)
+(def! list-ref (fn* [items n]
+  (if (= n 0)
+      (first items)
+      (list-ref (rest items) (- n 1)))))
+
+(def! length (fn* [items]
+  (if (empty? items)
+      0
+      (+ 1 (length (rest items))))))
+
+(def! length-iter (fn* [items]
+  (let* [iter (fn* [a count]
+                (if (empty? a)
+                    count
+                    (iter (rest a) (+ 1 count))))]
+    (iter items 0))))
+
+(def! append (fn* [list1 list2]
+  (if (empty? list1)
+      list2
+      (cons (first list1) (append (rest list1) list2)))))
+
+;; Exercise 2.17 - Last pair
+(def! last-pair (fn* [items]
+  (if (empty? (rest items))
+      items
+      (last-pair (rest items)))))
+
+;; Exercise 2.18 - Reverse
+(def! reverse (fn* [items]
+  (if (empty? items)
+      '()
+      (append (reverse (rest items))
+              (list (first items))))))
+
+;; Exercise 2.20 - Same parity
+(def! same-parity (fn* [x & others]
+  (let* [same? (if (even? x) even? odd?)
+         filter-parity (fn* [items]
+                         (cond (empty? items) '()
+                               (same? (first items))
+                                 (cons (first items)
+                                       (filter-parity (rest items)))
+                               :else (filter-parity (rest items))))]
+    (cons x (filter-parity others)))))
+
+;; Mapping over lists
+(def! map-sicp (fn* [proc items]
+  (if (empty? items)
+      '()
+      (cons (proc (first items))
+            (map-sicp proc (rest items))))))
+
+;; Exercise 2.21
+(def! square-list (fn* [items]
+  (if (empty? items)
+      '()
+      (cons (square (first items))
+            (square-list (rest items))))))
+
+(def! square-list-map (fn* [items]
+  (map-sicp square items)))
+
+;; Exercise 2.23 - for-each
+(def! for-each (fn* [proc items]
+  (if (not (empty? items))
+      (do
+        (proc (first items))
+        (for-each proc (rest items))))))

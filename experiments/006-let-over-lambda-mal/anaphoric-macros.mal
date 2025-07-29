@@ -1,0 +1,57 @@
+;; Chapter 7: Anaphoric Macros
+;; Self-referential macro programming
+
+;; Anaphoric if - 'it' refers to the test result
+(defmacro! aif (fn* (test then & else)
+  `(let* (it ~test)
+     (if it ~then ~@else))))
+
+;; Anaphoric when
+(defmacro! awhen (fn* (test & body)
+  `(let* (it ~test)
+     (when it ~@body))))
+
+;; Anaphoric lambda - self-reference
+(defmacro! alambda (fn* (args & body)
+  `(let* (self nil)
+     (def! self (fn* ~args ~@body))
+     self)))
+
+;; Anaphoric block - early exit
+(defmacro! ablock (fn* (name & body)
+  `(let* (return-from (fn* (val) (throw {:block ~name :value val})))
+     (try
+       (do ~@body)
+       (catch e
+         (if (and (map? e) (= (:block e) ~name))
+           (:value e)
+           (throw e)))))))
+
+;; Test anaphoric macros
+(println "🔮 Testing Anaphoric Macros...")
+
+;; Test aif
+(aif (+ 1 2)
+  (println "Result is:" it))
+
+;; Test awhen
+(awhen (get {:a 1 :b 2} :a)
+  (println "Found value:" it))
+
+;; Test alambda for recursive factorial
+(def! factorial-anaphoric
+  (alambda (n)
+    (if (= n 0)
+      1
+      (* n (self (- n 1))))))
+
+(println "5! =" (factorial-anaphoric 5))
+
+;; Test ablock
+(def! early-exit-example (fn* ()
+  (ablock exit
+    (println "Starting...")
+    (return-from 42)
+    (println "This won't print"))))
+
+(println "Early exit returned:" (early-exit-example))
