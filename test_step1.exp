@@ -14,7 +14,7 @@ expect "123"
 
 # Test negative numbers
 expect "user> "
-send "-456\r"
+send -- "-456\r"
 expect -- "-456"
 
 # Test symbols

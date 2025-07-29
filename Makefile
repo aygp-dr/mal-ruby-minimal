@@ -44,6 +44,7 @@ test-unit:
 	@ruby test/test_reader.rb
 	@ruby test/test_printer.rb
 	@ruby test/test_env.rb
+	@ruby test/test_step4.rb
 	@echo "Unit tests passed!"
 
 test-integration:
