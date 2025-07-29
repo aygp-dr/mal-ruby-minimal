@@ -1,0 +1,28 @@
+Added complete experiment infrastructure and content:
+
+Experiment 005 (SICP):
+- Created SETUP.org with literate programming structure
+- Generated 18 MAL files covering all 4 SICP chapters
+- Fixed tangle paths to use relative paths (./ instead of sicp/)
+- Includes examples from basic procedures to metacircular evaluator
+- Each chapter file contains working examples with MAL syntax
+
+Experiment 006 (Let Over Lambda):
+- Created comprehensive SETUP.org file
+- Generated 8 advanced Lisp pattern files
+- Covers closures, macros, anaphoric constructs, pandoric patterns
+- Includes DSL creation and runtime code modification
+- Performance optimization and memory management patterns
+
+Experiment 008 (Emacs Integration):
+- Created test suite to validate mal-ruby-minimal.el
+- Tests major mode association, key bindings, REPL integration
+- Specific tests for paredit functionality with MAL syntax
+- Validates syntax highlighting and project navigation
+- Results show most features working correctly
+
+Technical details:
+- org-babel-tangle extracts code from :tangle headers
+- Makefiles include 'gmake tangle' targets
+- All files use proper MAL syntax (def\!, fn*, let*)
+- Files are executable with proper shebang handling
