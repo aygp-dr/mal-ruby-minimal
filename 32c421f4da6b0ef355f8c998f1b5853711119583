@@ -1,0 +1,38 @@
+Context and Details for Test Fixes
+
+BACKGROUND:
+CI/CD pipeline showed failure with expect test on negative numbers.
+Added functional tests for step4.
+
+CHANGES MADE:
+1. test_step1.exp:
+   - Fixed send command for negative numbers using -- flag
+   - Prevents expect from interpreting -456 as a flag
+
+2. test/test_step4_functions.rb:
+   - Created functional test for step4 expressions
+   - Tests if, fn*, do, and basic operations
+   - Uses timeout to prevent hanging
+
+3. Makefile:
+   - Added test_step4_functions.rb to test-unit target
+
+TESTING:
+The functional test approach needs refinement but provides
+a framework for testing REPL-based implementations.
+
+PRECONDITIONS:
+- step4 implementation complete
+- expect installed for integration tests
+
+POSTCONDITIONS:
+- CI/CD should pass expect tests
+- Framework for testing REPL steps established
+
+DEVIATIONS:
+Using shell-based testing for REPL interactions
+
+FOLLOW-UP:
+1. Implement step5_tco
+2. Complete remaining steps
+3. Create AST auditor as requested
