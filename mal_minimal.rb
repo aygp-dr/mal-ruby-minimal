@@ -412,47 +412,20 @@ end
 
 # ===== Main =====
 if __FILE__ == $0
-  puts "Minimal MAL - A tiny Lisp in Ruby"
-  puts "Using only 13 AST nodes!"
-  puts "Type 'quit' to exit\n\n"
+  # Display banner if it exists
+  banner_path = File.join(File.dirname(__FILE__), 'resources', 'banner.txt')
+  if File.exist?(banner_path)
+    puts File.read(banner_path)
+  else
+    puts "Minimal MAL - A tiny Lisp in Ruby"
+    puts "Using only 13 AST nodes!"
+    puts "Type 'quit' to exit\n\n"
+  end
   
   env = create_root_env
   
-  # Example programs (using cons cells instead of arrays)
-  examples = cons("(+ 1 2)",
-    cons("(* 3 4)",
-    cons("(def x 42)",
-    cons("x",
-    cons("(def inc (fn (n) (+ n 1)))",
-    cons("(inc 5)",
-    cons("(def fact (fn (n) (if (= n 0) 1 (* n (fact (- n 1))))))",
-    cons("(fact 5)",
-    cons("(def lst (list 1 2 3))",
-    cons("(car lst)",
-    cons("(cdr lst)",
-    cons("(cons 0 lst)",
-    cons("(def map (fn (f lst) (if (null? lst) nil (cons (f (car lst)) (map f (cdr lst))))))",
-    cons("(map inc (list 1 2 3))",
-    cons("(do (print (quote Hello)) (print (quote World)) 42)", nil)))))))))))))))
-  
-  puts "=== Example Session ==="
-  example_list = examples
-  while !null?(example_list)
-    expr = car(example_list)
-    begin
-      puts "> #{expr}"
-      result = rep(expr, env)
-      puts "=> #{result}"
-      puts
-    rescue => e
-      puts "Error: #{e.message}"
-      puts
-    end
-    example_list = cdr(example_list)
-  end
-  
   # Interactive REPL
-  puts "\n=== Interactive REPL ==="
+  puts ""
   loop do
     print "> "
     input = gets

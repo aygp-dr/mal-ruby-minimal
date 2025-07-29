@@ -1,4 +1,4 @@
-.PHONY: all help deps run lint test test-unit test-integration test-coverage test-emacs check-constraints clean push push-all gh-info gh-workflows gh-secrets examples
+.PHONY: all help deps run repl tmux-repl lint test test-unit test-integration test-coverage test-emacs check-constraints clean push push-all gh-info gh-workflows gh-secrets examples
 
 # Default target
 all: help
@@ -8,6 +8,8 @@ help:
 	@echo ""
 	@echo "Main targets:"
 	@echo "  make run              - Run the MAL REPL"
+	@echo "  make repl             - Alias for 'make run'"
+	@echo "  make tmux-repl        - Run the MAL REPL in tmux session"
 	@echo "  make test             - Run all tests"
 	@echo "  make lint             - Run code quality checks"
 	@echo "  make push-all         - Test, lint, commit, and push"
@@ -56,6 +58,24 @@ deps:
 run:
 	@echo "Starting MAL REPL..."
 	@ruby mal_minimal.rb
+
+# Alias for run
+repl: run
+
+# Run REPL in tmux session
+tmux-repl:
+	@echo "Starting MAL REPL in tmux session 'mal-repl'..."
+	@tmux kill-session -t mal-repl 2>/dev/null || true
+	@tmux new-session -d -s mal-repl 'cd $(shell pwd) && ruby mal_minimal.rb'
+	@echo ""
+	@echo "REPL started in tmux session."
+	@echo "To attach: tmux attach -t mal-repl"
+	@echo "To detach: Ctrl+B then D"
+	@echo "To send commands: tmux send-keys -t mal-repl '<command>' C-m"
+	@echo ""
+	@echo "Example factorial demo:"
+	@echo "  tmux send-keys -t mal-repl '(def! factorial (fn* (n) (if (< n 2) 1 (* n (factorial (- n 1))))))' C-m"
+	@echo "  tmux send-keys -t mal-repl '(factorial 5)' C-m"
 
 lint: check-constraints
 	@echo "Running Ruby syntax checks..."
@@ -172,9 +192,16 @@ docs/mal-process-guide.md: | docs
 	@curl -L -o $@ https://raw.githubusercontent.com/kanaka/mal/master/process/guide.md
 	@echo "Downloaded to $@"
 
-# Directory creation target
+# Directory creation targets
 docs:
 	@install -d $@
+
+resources:
+	@install -d $@
+
+# Banner file for REPL startup
+resources/banner.txt: | resources
+	@echo "Banner file exists at $@"
 
 # Push commits, notes, and tags to GitHub
 push:
