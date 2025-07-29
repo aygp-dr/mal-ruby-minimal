@@ -1,0 +1,18 @@
+WHY: Need consistent documentation for all commits to make the project reproducible and educational.
+
+CONTEXT: When teaching or revisiting this project, we need to understand not just WHAT changed but WHY it changed and HOW to verify it works. This is especially important for a pedagogical project.
+
+CHANGES:
+- Created comprehensive git notes template
+- Added examples for different types of commits (features, bugs, docs)
+- Included git commands for managing notes
+- Structured format: WHY, CONTEXT, CHANGES, TESTING, IMPACT, FUTURE
+
+TESTING:
+- Template is markdown, viewable in any editor
+- Examples demonstrate real commits from this project
+- Git commands tested and verified to work
+
+IMPACT: Future contributors (including ourselves) will have clear guidelines for documenting changes. Makes the project more maintainable and educational.
+
+FUTURE: Apply this template to all significant commits going forward. Consider adding git hooks to remind about notes.
