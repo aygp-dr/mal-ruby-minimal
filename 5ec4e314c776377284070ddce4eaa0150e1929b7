@@ -1,0 +1,35 @@
+WHY: Macros are essential to Lisp's power, allowing programs to
+transform code before evaluation. This implements user-defined special forms.
+
+CONTEXT: Step 8 of MAL adds macro support, completing the core metaprogramming
+features that make Lisp special.
+
+IMPLEMENTATION:
+- Extended make_mal_fn to include is_macro attribute
+- Added defmacro\! special form that creates macro functions
+- Implemented macroexpand for recursive macro expansion
+- Added macroexpand special form for debugging
+- Added car/cdr to core (needed for macro manipulation)
+
+TESTING:
+- 24 comprehensive tests covering all macro features
+- Tests include basic macros, quasiquote in macros, nested expansion
+- All tests pass
+
+PEDAGOGICAL VALUE:
+- Shows how special forms can be user-defined
+- Demonstrates code-as-data principle
+- Explains difference between functions and macros
+- Provides debugging tools (macroexpand)
+
+EXAMPLES:
+- unless, or, and macros
+- Thread-first macro (->)
+- cond macro
+- Shows both simple and complex use cases
+
+TECHNICAL NOTES:
+- Macros are expanded before evaluation
+- Macro functions receive unevaluated arguments
+- Recursive expansion handles nested macros
+- TCO still works with macro-generated code
