@@ -1,0 +1,55 @@
+Context and Details for Step 3 Environment Implementation
+
+BACKGROUND:
+Step 3 introduces proper environment handling with def\! and let* special forms.
+This establishes lexical scoping using association lists built from cons cells.
+
+CHANGES MADE:
+1. env.rb module:
+   - Env class using association lists for bindings
+   - set/find/get methods for variable management
+   - Nested environment support with outer references
+   - Pure cons cell implementation
+
+2. step3_env.rb:
+   - def\! special form for defining variables
+   - let* special form for local bindings
+   - Proper environment chaining
+   - Error handling for malformed expressions
+
+3. Makefile updates:
+   - Added 'make push' target for git operations
+   - Pushes commits, notes, and tags separately
+
+4. experiments/001-ruby-ast-validation:
+   - Documents AST validation approach
+   - Confirms no forbidden constructs used
+   - Maps implementation to 13 essential nodes
+
+TESTING:
+Manual testing shows proper scoping:
+- (def\! x 5) then x => 5
+- (let* (a 6 b 7) (+ a b)) => 13
+- Nested let* forms work correctly
+- Shadowing works as expected
+
+PRECONDITIONS:
+- Reader, printer, and basic eval working
+- Cons cells for all data structures
+
+POSTCONDITIONS:
+- Variables can be defined and retrieved
+- Local scopes with let* work properly
+- Environment chaining implemented
+
+EXPERIMENTS:
+Created experiments directory for tracking explorations.
+Experiment 001 validates AST usage constraints.
+
+DEVIATIONS:
+None - pure cons cell implementation maintained
+
+FOLLOW-UP:
+1. Create unit tests for all steps
+2. Update Makefile with test target
+3. Implement step4 with if/fn/do
