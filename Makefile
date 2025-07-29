@@ -1,4 +1,4 @@
-.PHONY: all help deps run repl tmux-repl lint test test-unit test-integration test-coverage test-emacs check-constraints clean push push-all gh-info gh-workflows gh-secrets examples
+.PHONY: all help deps run repl tmux-repl lint test test-unit test-integration test-coverage test-emacs check-constraints clean push push-all gh-info gh-workflows gh-secrets examples mal-deps
 
 # Default target
 all: help
@@ -13,6 +13,7 @@ help:
 	@echo "  make test             - Run all tests"
 	@echo "  make lint             - Run code quality checks"
 	@echo "  make push-all         - Test, lint, commit, and push"
+	@echo "  make mal-deps         - Download MAL-in-MAL dependencies"
 	@echo ""
 	@echo "Testing targets:"
 	@echo "  make test-unit        - Run unit tests"
@@ -183,6 +184,25 @@ clean:
 # Run examples
 examples:
 	@$(MAKE) -C examples run
+
+# Download MAL-in-MAL dependencies
+mal-deps: mal/stepA_mal.mal mal/env.mal mal/core.mal
+
+mal/stepA_mal.mal: | mal
+	@echo "Downloading MAL-in-MAL implementation..."
+	@curl -L -o $@ https://raw.githubusercontent.com/kanaka/mal/master/impls/mal/stepA_mal.mal
+
+mal/env.mal: | mal
+	@echo "Downloading MAL environment implementation..."
+	@curl -L -o $@ https://raw.githubusercontent.com/kanaka/mal/master/impls/mal/env.mal
+
+mal/core.mal: | mal
+	@echo "Downloading MAL core functions..."
+	@curl -L -o $@ https://raw.githubusercontent.com/kanaka/mal/master/impls/mal/core.mal
+
+# Create mal directory
+mal:
+	@install -d $@
 
 # Run a specific MAL expression
 expr:

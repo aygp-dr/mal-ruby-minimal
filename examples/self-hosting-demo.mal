@@ -1,0 +1,58 @@
+;; Simple Self-Hosting Demo
+;; This demonstrates that our interpreter can evaluate MAL code
+;; using MAL functions (the essence of self-hosting)
+
+;; Define a simple evaluator for basic expressions
+(def! simple-eval (fn* (expr)
+  (cond 
+    (number? expr) expr
+    (string? expr) expr
+    (symbol? expr) (throw "Cannot evaluate symbols in simple-eval")
+    (list? expr)
+      (let* (op (first expr)
+             args (rest expr))
+        (cond
+          (= op '+) (apply + (map simple-eval args))
+          (= op '*) (apply * (map simple-eval args))
+          (= op 'list) (apply list (map simple-eval args))
+          :else (throw (str "Unknown operator: " op))))
+    :else (throw "Unknown expression type"))))
+
+;; Test the simple evaluator
+(println "Testing simple self-hosted evaluator:")
+(println (str "(simple-eval '(+ 1 2 3)) => " (simple-eval '(+ 1 2 3))))
+(println (str "(simple-eval '(* 2 3 4)) => " (simple-eval '(* 2 3 4))))
+(println (str "(simple-eval '(list 1 2 3)) => " (simple-eval '(list 1 2 3))))
+
+;; Define a more complex function using our evaluator
+(def! eval-arithmetic (fn* (expr)
+  "Evaluate arithmetic expressions recursively"
+  (if (list? expr)
+    (let* (op (first expr)
+           operands (map eval-arithmetic (rest expr)))
+      (cond
+        (= op '+) (apply + operands)
+        (= op '-) (apply - operands)  
+        (= op '*) (apply * operands)
+        (= op '/) (apply / operands)
+        :else (throw (str "Unknown operator: " op))))
+    expr)))
+
+(println "\nTesting recursive arithmetic evaluator:")
+(println (str "(eval-arithmetic '(+ 1 (* 2 3) 4)) => " 
+              (eval-arithmetic '(+ 1 (* 2 3) 4))))
+(println (str "(eval-arithmetic '(* (+ 1 2) (- 5 2))) => " 
+              (eval-arithmetic '(* (+ 1 2) (- 5 2)))))
+
+;; Demonstrate higher-order function evaluation
+(def! map-eval (fn* (f exprs)
+  "Map an evaluator function over a list of expressions"
+  (map f exprs)))
+
+(println "\nTesting higher-order evaluation:")
+(def! test-exprs (list '(+ 1 2) '(* 3 4) '(- 10 5)))
+(println (str "Expressions: " test-exprs))
+(println (str "Results: " (map-eval eval-arithmetic test-exprs)))
+
+(println "\n✓ Self-hosting demonstration complete!")
+(println "Our MAL interpreter can evaluate MAL code using MAL functions.")

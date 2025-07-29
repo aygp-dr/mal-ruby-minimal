@@ -1,0 +1,405 @@
+{
+  "summary": {
+    "total_nodes": 1205,
+    "unique_types": 32,
+    "ruby_essence_coverage": 9
+  },
+  "node_frequencies": {
+    "begin": 102,
+    "send": 279,
+    "str": 279,
+    "lvasgn": 41,
+    "const": 23,
+    "lvar": 124,
+    "hash": 3,
+    "def": 32,
+    "int": 48,
+    "array": 17,
+    "block": 13,
+    "args": 13,
+    "arg": 20,
+    "if": 20,
+    "next": 4,
+    "or": 7,
+    "regexp": 17,
+    "regopt": 17,
+    "dstr": 36,
+    "class": 5,
+    "sym": 29,
+    "pair": 20,
+    "op_asgn": 17,
+    "case": 1,
+    "when": 12,
+    "xstr": 1,
+    "nth_ref": 4,
+    "gvasgn": 16,
+    "gvar": 2,
+    "kwbegin": 1,
+    "rescue": 1,
+    "resbody": 1
+  },
+  "file_breakdown": {
+    "analyze_ast.rb": {
+      "begin": 1,
+      "send": 4,
+      "str": 3,
+      "lvasgn": 3,
+      "const": 2,
+      "lvar": 1,
+      "hash": 1,
+      "def": 1
+    },
+    "analyze_ast_v2.rb": {
+      "begin": 16,
+      "send": 69,
+      "str": 41,
+      "lvasgn": 7,
+      "const": 2,
+      "lvar": 46,
+      "int": 4,
+      "array": 6,
+      "block": 8,
+      "args": 8,
+      "arg": 14,
+      "if": 11,
+      "next": 3,
+      "or": 6,
+      "regexp": 7,
+      "regopt": 7,
+      "dstr": 6
+    },
+    "env.rb": {
+      "begin": 2,
+      "send": 2,
+      "str": 1,
+      "class": 1,
+      "const": 1,
+      "sym": 2,
+      "def": 1
+    },
+    "env_commented.rb": {
+      "begin": 2,
+      "send": 2,
+      "str": 1,
+      "class": 1,
+      "const": 1,
+      "sym": 1,
+      "def": 1
+    },
+    "env_pedagogical.rb": {
+      "begin": 2,
+      "send": 2,
+      "str": 1,
+      "class": 1,
+      "const": 1,
+      "sym": 2,
+      "def": 1
+    },
+    "eval_pedagogical.rb": {
+      "begin": 1,
+      "send": 3,
+      "str": 3,
+      "def": 1
+    },
+    "mal_minimal.rb": {
+      "begin": 1,
+      "def": 1
+    },
+    "printer.rb": {
+      "begin": 1,
+      "send": 1,
+      "str": 1,
+      "def": 1
+    },
+    "printer_pedagogical.rb": {
+      "begin": 1,
+      "send": 1,
+      "str": 1,
+      "def": 1
+    },
+    "reader.rb": {
+      "begin": 1,
+      "def": 1
+    },
+    "reader_commented.rb": {
+      "begin": 1,
+      "def": 1
+    },
+    "reader_pedagogical.rb": {
+      "begin": 1,
+      "def": 1
+    },
+    "ruby_essence_comparison.rb": {
+      "begin": 21,
+      "send": 80,
+      "str": 100,
+      "int": 14,
+      "lvasgn": 4,
+      "hash": 2,
+      "pair": 20,
+      "const": 1,
+      "lvar": 40,
+      "sym": 22,
+      "block": 2,
+      "args": 2,
+      "arg": 3,
+      "if": 3,
+      "next": 1,
+      "op_asgn": 8,
+      "regexp": 8,
+      "regopt": 8,
+      "dstr": 19,
+      "case": 1,
+      "when": 12
+    },
+    "step0_repl.rb": {
+      "begin": 1,
+      "def": 1
+    },
+    "step1_read_print.rb": {
+      "begin": 1,
+      "send": 2,
+      "str": 2,
+      "def": 1
+    },
+    "step2_eval.rb": {
+      "begin": 1,
+      "send": 2,
+      "str": 2,
+      "def": 1
+    },
+    "step3_env.rb": {
+      "begin": 1,
+      "send": 3,
+      "str": 3,
+      "def": 1
+    },
+    "step4_if_fn_do.rb": {
+      "begin": 1,
+      "send": 3,
+      "str": 3,
+      "def": 1
+    },
+    "step5_tco.rb": {
+      "begin": 1,
+      "send": 3,
+      "str": 3,
+      "def": 1
+    },
+    "step6_file.rb": {
+      "begin": 1,
+      "send": 3,
+      "str": 3,
+      "def": 1
+    },
+    "step7_quote.rb": {
+      "begin": 1,
+      "send": 3,
+      "str": 3,
+      "def": 1
+    },
+    "step8_macros.rb": {
+      "begin": 1,
+      "send": 3,
+      "str": 3,
+      "def": 1
+    },
+    "step9_try.rb": {
+      "begin": 2,
+      "send": 4,
+      "str": 3,
+      "class": 1,
+      "const": 2,
+      "sym": 1,
+      "def": 1
+    },
+    "stepA_mal.rb": {
+      "begin": 2,
+      "send": 4,
+      "str": 3,
+      "class": 1,
+      "const": 2,
+      "sym": 1,
+      "def": 1
+    },
+    "test_mal.rb": {
+      "begin": 1,
+      "send": 1,
+      "str": 1,
+      "def": 1
+    },
+    "test_stepA.rb": {
+      "begin": 1,
+      "send": 1,
+      "str": 1,
+      "def": 1
+    },
+    "test/run_all_tests.rb": {
+      "begin": 11,
+      "send": 27,
+      "const": 1,
+      "str": 25,
+      "int": 8,
+      "lvasgn": 17,
+      "array": 1,
+      "block": 1,
+      "lvar": 20,
+      "args": 1,
+      "arg": 1,
+      "dstr": 3,
+      "xstr": 1,
+      "if": 3,
+      "regexp": 2,
+      "regopt": 2,
+      "nth_ref": 4,
+      "op_asgn": 6
+    },
+    "test/test_env.rb": {
+      "begin": 1,
+      "send": 2,
+      "str": 2,
+      "gvasgn": 2,
+      "int": 2,
+      "def": 1
+    },
+    "test/test_helper.rb": {
+      "begin": 3,
+      "if": 1,
+      "or": 1,
+      "send": 13,
+      "const": 4,
+      "str": 17,
+      "block": 1,
+      "args": 1,
+      "array": 1,
+      "gvar": 1,
+      "def": 1
+    },
+    "test/test_printer.rb": {
+      "begin": 1,
+      "send": 2,
+      "str": 2,
+      "gvasgn": 2,
+      "int": 2,
+      "def": 1
+    },
+    "test/test_reader.rb": {
+      "begin": 1,
+      "send": 1,
+      "str": 1,
+      "gvasgn": 2,
+      "int": 2,
+      "def": 1
+    },
+    "test/test_step4.rb": {
+      "begin": 1,
+      "send": 6,
+      "str": 6,
+      "const": 2,
+      "gvasgn": 2,
+      "int": 2,
+      "def": 1
+    },
+    "test/test_step4_functions.rb": {
+      "begin": 15,
+      "send": 24,
+      "str": 36,
+      "lvasgn": 10,
+      "gvar": 1,
+      "gvasgn": 2,
+      "const": 2,
+      "lvar": 17,
+      "array": 9,
+      "int": 8,
+      "block": 1,
+      "args": 1,
+      "arg": 2,
+      "kwbegin": 1,
+      "rescue": 1,
+      "if": 2,
+      "dstr": 8,
+      "op_asgn": 3,
+      "resbody": 1
+    },
+    "test/test_step7.rb": {
+      "begin": 1,
+      "send": 6,
+      "str": 6,
+      "const": 2,
+      "gvasgn": 2,
+      "int": 2,
+      "def": 1
+    },
+    "test/test_step8_macros.rb": {
+      "begin": 1,
+      "send": 1,
+      "str": 1,
+      "gvasgn": 2,
+      "int": 2,
+      "def": 1
+    },
+    "test/test_step9_try.rb": {
+      "begin": 1,
+      "send": 1,
+      "str": 1,
+      "gvasgn": 2,
+      "int": 2,
+      "def": 1
+    }
+  },
+  "ruby_essence_analysis": {
+    "found": [
+      "begin",
+      "send",
+      "str",
+      "const",
+      "lvar",
+      "def",
+      "int",
+      "args",
+      "if"
+    ],
+    "missing": [
+      "return",
+      "true",
+      "false",
+      "nil"
+    ],
+    "additional": [
+      "lvasgn",
+      "hash",
+      "array",
+      "block",
+      "arg",
+      "next",
+      "or",
+      "regexp",
+      "regopt",
+      "dstr",
+      "class",
+      "sym",
+      "pair",
+      "op_asgn",
+      "case",
+      "when",
+      "xstr",
+      "nth_ref",
+      "gvasgn",
+      "gvar",
+      "kwbegin",
+      "rescue",
+      "resbody"
+    ]
+  },
+  "complexity_metrics": {
+    "methods": 32,
+    "conditionals": 21,
+    "classes": 5
+  },
+  "method_definitions": [
+
+  ],
+  "control_flow_patterns": [
+
+  ]
+}
