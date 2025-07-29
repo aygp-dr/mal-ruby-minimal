@@ -1,0 +1,27 @@
+Banner alignment debugging revealed important workflow lessons:
+
+1. Directory navigation issues:
+   - Using cd and .. in bash commands breaks reproducibility
+   - Context gets lost, especially after shell resets
+   - Solution: Always use gmake -C from project root
+
+2. Text formatting challenges:
+   - Editors/systems auto-trim trailing spaces
+   - Line length calculations affected by Unicode characters
+   - Different tools (sed/gsed, awk/gawk) have syntax variations
+   - Escape sequences in gawk need careful handling
+
+3. Debugging approach:
+   - Created comprehensive debugging tools in experiment 009
+   - Used gawk to analyze line lengths programmatically
+   - Attempted multiple automated fixes with gsed
+   - Ultimately required manual intervention
+
+4. Best practices established:
+   - Work from project root with explicit paths
+   - Use gmake -C for entering directories in commands
+   - Create validation targets for formatting checks
+   - Document failed attempts for learning value
+
+The experiment demonstrates that some problems (like fighting auto-formatting)
+are better solved with manual intervention than complex automation.
