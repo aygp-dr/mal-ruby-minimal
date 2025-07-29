@@ -1,4 +1,4 @@
-.PHONY: all help deps run test test-unit test-integration check-constraints clean push gh-info gh-workflows gh-secrets examples
+.PHONY: all help deps run lint test test-unit test-integration test-coverage check-constraints clean push push-all gh-info gh-workflows gh-secrets examples
 
 # Default target
 all: help
@@ -6,14 +6,29 @@ all: help
 help:
 	@echo "MAL Ruby Minimal - Makefile targets"
 	@echo ""
-	@echo "  make deps             - Check system dependencies"
+	@echo "Main targets:"
 	@echo "  make run              - Run the MAL REPL"
 	@echo "  make test             - Run all tests"
+	@echo "  make lint             - Run code quality checks"
+	@echo "  make push-all         - Test, lint, commit, and push"
+	@echo ""
+	@echo "Testing targets:"
 	@echo "  make test-unit        - Run unit tests"
 	@echo "  make test-integration - Run integration tests"
+	@echo "  make test-coverage    - Run tests with code coverage"
+	@echo ""
+	@echo "Development targets:"
+	@echo "  make deps             - Check system dependencies"
 	@echo "  make check-constraints - Verify no arrays/hashes/blocks"
-	@echo "  make push             - Push commits, notes, and tags"
 	@echo "  make clean            - Clean generated files"
+	@echo "  make examples         - Run example programs"
+	@echo ""
+	@echo "Git targets:"
+	@echo "  make push             - Push commits, notes, and tags"
+	@echo "  make gh-info          - Show GitHub repo information"
+	@echo "  make gh-workflows     - List GitHub Actions workflows"
+	@echo "  make gh-secrets       - List GitHub secrets"
+	@echo ""
 	@echo "  make help             - Show this help"
 
 deps:
@@ -36,6 +51,18 @@ run:
 	@echo "Starting MAL REPL..."
 	@ruby mal_minimal.rb
 
+lint: check-constraints
+	@echo "Running Ruby syntax checks..."
+	@find . -name "*.rb" -not -path "./examples/*" -not -path "./experiments/*" | xargs -I {} ruby -c {} > /dev/null
+	@echo "✓ All Ruby files have valid syntax"
+	@echo ""
+	@echo "Checking for debugging artifacts..."
+	@! grep -r "binding\.pry\|debugger\|byebug" --include="*.rb" . || (echo "✗ Found debugging statements" && exit 1)
+	@echo "✓ No debugging artifacts found"
+	@echo ""
+	@echo "Checking for TODO/FIXME comments..."
+	@grep -r "TODO\|FIXME" --include="*.rb" . || echo "✓ No TODO/FIXME comments found"
+
 test: test-unit test-integration
 	@echo "All tests passed!"
 
@@ -44,7 +71,8 @@ test-unit:
 	@ruby test/test_reader.rb
 	@ruby test/test_printer.rb
 	@ruby test/test_env.rb
-	@ruby test/test_step4.rb
+	@ruby test/test_step4_functions.rb
+	@ruby test/test_step7.rb
 	@echo "Unit tests passed!"
 
 test-integration:
@@ -54,6 +82,15 @@ test-integration:
 	else \
 		echo "SKIP: expect not installed"; \
 	fi
+
+test-coverage:
+	@echo "Running tests with code coverage..."
+	@if [ -f Gemfile ]; then \
+		bundle install --quiet || gem install simplecov; \
+	fi
+	@COVERAGE=1 ruby test/run_all_tests.rb
+	@echo ""
+	@echo "Coverage report: coverage/index.html"
 
 check-constraints:
 	@echo "Checking for forbidden Ruby constructs..."
@@ -75,6 +112,7 @@ check-constraints:
 clean:
 	@echo "Cleaning..."
 	@rm -f *.tmp *.log
+	@rm -rf coverage/
 
 # Run examples
 examples:
@@ -140,3 +178,21 @@ gh-secrets:
 	else \
 		echo "No secrets found or insufficient permissions"; \
 	fi
+
+# Combined workflow: test, lint, commit, and push
+push-all: test lint
+	@echo ""
+	@echo "All tests and checks passed!"
+	@echo ""
+	@echo "Ready to commit and push?"
+	@echo "Press Ctrl+C to cancel, or Enter to continue..."
+	@read confirm
+	@echo ""
+	@if [ -n "$$(git status --porcelain)" ]; then \
+		echo "Uncommitted changes found:"; \
+		git status --short; \
+		echo ""; \
+		echo "Please commit your changes first."; \
+		exit 1; \
+	fi
+	@$(MAKE) push

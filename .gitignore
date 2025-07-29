@@ -1,0 +1,102 @@
+# Ruby
+*.gem
+*.rbc
+/.config
+/coverage/
+/InstalledFiles
+/pkg/
+/spec/reports/
+/spec/examples.txt
+/test/tmp/
+/test/version_tmp/
+/tmp/
+.bundle/
+Gemfile.lock
+
+# Ruby LSP
+.ruby-lsp/
+
+# RSpec
+.rspec_status
+
+# SimpleCov
+/coverage/
+
+# Yard documentation
+.yardoc
+_yardoc
+doc/
+
+# Scheme/Guile
+*.scm~
+*.go
+*.log
+*.fasl
+*.so
+*.ss#*
+.#*.ss
+*.ss~
+*.scm#*
+.#*.scm
+*.scmlog
+SCRATCH*
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Org-mode
+.org-id-locations
+*_archive
+
+# flymake-mode
+*_flymake.*
+
+# eshell files
+/eshell/history
+/eshell/lastdir
+
+# elpa packages
+/elpa/
+
+# reftex files
+*.rel
+
+# AUCTeX auto folder
+/auto/
+
+# cask packages
+.cask/
+dist/
+
+# Flycheck
+flycheck_*.el
+
+# projectiles files
+.projectile
+
+# directory configuration
+.dir-locals.el
+
+# network security
+/network-security.data
+
+# General
+*.tmp
+*.log
+*.swp
+*.swo
+*~
+.DS_Store
+.idea/
+.vscode/
+
+# Project specific
+/experiments/scratch/
+/experiments/tmp/

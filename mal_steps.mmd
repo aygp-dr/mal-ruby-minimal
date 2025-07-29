@@ -1,0 +1,76 @@
+graph TD
+    subgraph Core["Core"]
+        CoreFns["= < <= > >= + - * /<br/>pr-str str prn println list list? empty? count<br/>read-string slurp<br/>atom atom? deref reset! swap!<br/>cons concat nth first rest<br/>throw nil? true? false? symbol symbol?<br/>keyword keyword? vector vector?<br/>hash-map map? assoc dissoc get contains?<br/>keys vals sequential? apply map<br/>readline fn? string? number? conj seq<br/>with-meta meta time-ms"]
+    end
+
+    subgraph READ["READ"]
+        readline_input["readline"]
+        read_str["read_str"]
+        readline_input --> |"string"| read_str
+        read_str --> |"AST"| EVAL
+    end
+
+    subgraph EVAL["EVAL"]
+        evaluate["evaluate"]
+        TCO["TCO"]
+        apply_fn["apply"]
+        
+        evaluate --> |"symbol"| symbol_lookup
+        evaluate --> |"vector"| vector_eval
+        evaluate --> |"hash-map"| hashmap_eval
+        evaluate --> |"list"| list_eval
+        
+        subgraph SpecialForms["Special Forms"]
+            let_form["let*"]
+            apply_form["apply"]
+            apply_macro["apply macro"]
+            try_catch["try*/catch*"]
+            do_form["do"]
+            if_form["if"]
+            quasiquote_form["quasiquote"]
+            def_form["def!"]
+            defmacro_form["defmacro!"]
+            fn_form["fn*"]
+            quote_form["quote"]
+        end
+        
+        list_eval --> SpecialForms
+        TCO --> apply_fn
+    end
+
+    subgraph Env["Env"]
+        not_fn["not"]
+        eval_fn["eval"]
+        load_file["load-file *ARGV*"]
+        cond_fn["cond"]
+        host_language["*host-language*"]
+    end
+
+    subgraph PRINT["PRINT"]
+        printline["printline"]
+        pr_str["pr_str"]
+        EVAL --> |"AST"| pr_str
+        pr_str --> |"string"| printline
+    end
+
+    Core --> Env
+    Env --> |"create env"| EVAL
+    Env --> |"update env"| EVAL
+    evaluate --> |"symbol lookup"| Env
+    let_form --> |"create env"| Env
+    def_form --> |"update env"| Env
+    defmacro_form --> |"update env"| Env
+    fn_form --> |"create env"| Env
+
+    in[" "] --> READ
+    printline --> out[" "]
+    
+    LOOP["LOOP"]
+    printline -.-> LOOP
+    LOOP -.-> readline_input
+    
+    style Core fill:#f9f,stroke:#333,stroke-width:2px
+    style READ fill:#bbf,stroke:#333,stroke-width:2px
+    style EVAL fill:#bfb,stroke:#333,stroke-width:2px
+    style PRINT fill:#fbb,stroke:#333,stroke-width:2px
+    style Env fill:#fbf,stroke:#333,stroke-width:2px
