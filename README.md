@@ -8,32 +8,89 @@
 
 A minimal implementation of MAL (Make a Lisp) in Ruby using only 13 AST node types.
 
+## Implementation Architecture
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant REPL
+    participant Reader
+    participant Evaluator 
+    participant Printer
+    participant Env as Environment
+    
+    User->>REPL: (+ 1 2)
+    activate REPL
+    
+    REPL->>Reader: read_str("(+ 1 2)")
+    activate Reader
+    Note over Reader: Tokenize: ["(", "+", "1", "2", ")"]
+    Note over Reader: Parse into AST
+    Reader-->>REPL: AST: (+ 1 2)
+    deactivate Reader
+    
+    REPL->>Evaluator: EVAL(ast, env)
+    activate Evaluator
+    
+    Evaluator->>Env: lookup("+")
+    activate Env
+    Env-->>Evaluator: builtin +
+    deactivate Env
+    
+    Note over Evaluator: Evaluate args: 1, 2
+    Note over Evaluator: Apply + to (1 2)
+    
+    Evaluator-->>REPL: 3
+    deactivate Evaluator
+    
+    REPL->>Printer: pr_str(3)
+    activate Printer
+    Printer-->>REPL: "3"
+    deactivate Printer
+    
+    REPL-->>User: 3
+    deactivate REPL
+```
+
 ## Implementation Steps
 
 ```mermaid
-graph TD
-    A[Step 0: REPL<br/>Read-Eval-Print Loop] --> B[Step 1: Read/Print<br/>Parsing & Printing]
-    B --> C[Step 2: Eval<br/>Expression Evaluation]
-    C --> D[Step 3: Environments<br/>Variables & Scoping]
-    D --> E[Step 4: Functions<br/>if, fn*, do]
-    E --> F[Step 5: TCO<br/>Tail Call Optimization]
-    F --> G[Step 6: Files<br/>File I/O, eval, atoms]
-    G --> H[Step 7: Quoting<br/>quote, quasiquote]
-    H --> I[Step 8: Macros<br/>defmacro!]
-    I --> J[Step 9: Try<br/>Exception Handling]
-    J --> K[Step A: Self-Host<br/>MAL in MAL]
+graph LR
+    subgraph "Core Foundation"
+        S0[Step 0<br/>Basic REPL]
+        S1[Step 1<br/>Parse/Print]
+        S2[Step 2<br/>Evaluation]
+        S3[Step 3<br/>Variables]
+    end
     
-    style A fill:#90EE90
-    style B fill:#90EE90
-    style C fill:#90EE90
-    style D fill:#90EE90
-    style E fill:#90EE90
-    style F fill:#90EE90
-    style G fill:#90EE90
-    style H fill:#FFD700
-    style I fill:#FFB6C1
-    style J fill:#FFB6C1
-    style K fill:#FFB6C1
+    subgraph "Language Features"
+        S4[Step 4<br/>Functions]
+        S5[Step 5<br/>TCO]
+        S6[Step 6<br/>Files]
+        S7[Step 7<br/>Macros]
+    end
+    
+    subgraph "Advanced"
+        S8[Step 8<br/>Macros+]
+        S9[Step 9<br/>Try/Catch]
+        SA[Step A<br/>Self-Host]
+    end
+    
+    S0 --> S1 --> S2 --> S3
+    S3 --> S4 --> S5 --> S6 --> S7
+    S7 --> S8 --> S9 --> SA
+    
+    style S0 fill:#90EE90
+    style S1 fill:#90EE90
+    style S2 fill:#90EE90
+    style S3 fill:#90EE90
+    style S4 fill:#90EE90
+    style S5 fill:#90EE90
+    style S6 fill:#90EE90
+    style S7 fill:#FFD700
+    style S8 fill:#FFB6C1
+    style S9 fill:#FFB6C1
+    style SA fill:#FFB6C1
 ```
 
 *Green: Complete | Yellow: In Progress | Pink: Planned*
