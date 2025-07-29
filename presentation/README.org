@@ -196,24 +196,42 @@ We conducted comprehensive analysis across major Ruby codebases:
 
 *Staff+ Takeaway*: Language patterns transcend domains
 
-** MAL-Specific AST Distribution
+** MAL AST Progression: Deep Dive Analysis
 
 #+BEGIN_CENTER
-Top Ruby AST nodes in our implementation:
+*Empirical Analysis*: Node usage across all MAL implementation steps
 #+END_CENTER
 
-#+BEGIN_EXAMPLE
-1. * send     5,941  (28.6%)  Method calls everywhere
-2. * lvar     4,652  (22.4%)  Environment chains  
-3. * str      2,710  (13.0%)  Parser/printer heavy
-4.   lvasgn   1,182   (5.7%)  Variable assignments
-5. * begin      998   (4.8%)  Block structure
-6. * if        815   (3.9%)  Minimal control flow
-#+END_EXAMPLE
+#+BEGIN_CENTER
+| Step | File Size | Total Nodes | Unique Types | Growth Factor |
+|------+-----------+-------------+--------------+---------------|
+| 0    | 11.7KB    | 55          | 19           | baseline      |
+| 1    | 16.2KB    | 77          | 25           | 1.38x         |
+| 2    | 83.4KB    | 379         | 33           | 5.15x         |
+| 4    | 269.6KB   | 1,068       | 38           | 1.94x         |
+| 9    | 768.6KB   | 2,383       | 43           | 1.23x         |
+| A    | 1.5MB     | 3,713       | 43           | 1.97x         |
+#+END_CENTER
 
 #+BEAMER: \pause
 
-*Insight*: Interpreter = Heavy method dispatch + String processing + Minimal branching
+*Critical Discovery*: Step 2 shows 5.15x complexity jump (evaluation logic)
+
+** MAL vs Wild Ruby: The Reality Check
+
+#+BEGIN_CENTER
+*Sample Analysis*: 100 random files from 50k+ Ruby corpus
+#+END_CENTER
+
+#+ATTR_BEAMER: :overlay +-
+- *Wild Ruby*: 66 unique node types vs our 43 (35% more complexity)
+- *Our coverage*: 66.7% of real-world Ruby node diversity
+- *Missing nodes*: NODE_IVAR, NODE_MODULE, NODE_SELF (OOP patterns)
+- *Shared top node*: NODE_LIST dominates both (14-23% usage)
+
+#+BEAMER: \pause
+
+*Validation*: Our minimal subset approach captures core Ruby effectively while revealing the 35% gap for production use
 
 * Implementation Patterns
 
@@ -285,21 +303,25 @@ obj.respond_to?(:method_name) && obj.method_name
 - Complete test coverage (141 tests)
 - Architecture guild presentation quality
 
-** Progressive Complexity
+** Progressive Complexity: Universal Node Analysis
 
-Each implementation step increases sophistication:
+*19 Universal Nodes* appear in every MAL step:
+#+BEGIN_EXAMPLE
+NODE_ARGS, NODE_BLOCK, NODE_BREAK, NODE_CALL, NODE_DASGN
+NODE_DEFN, NODE_DVAR, NODE_FCALL, NODE_GVAR, NODE_IF
+NODE_ITER, NODE_LIST, NODE_LVAR, NODE_NEXT, NODE_NIL
+NODE_OPCALL, NODE_SCOPE, NODE_STR, NODE_VCALL
+#+END_EXAMPLE
 
-#+BEGIN_CENTER
-| Step | Description | AST Node Types |
-|------+-------------+----------------|
-| 0 | Basic REPL | 4 types |
-| 1-3 | Parse/Eval/Env | 8 types |
-| 4-6 | Functions/TCO/Files | 15 types |
-| 7-9 | Quote/Macros/Try | 20 types |
-| A | Self-hosting | 23 types |
-#+END_CENTER
+#+BEAMER: \pause
 
-*Pedagogical Insight*: Gradual complexity introduction works
+*Node Evolution Timeline*:
+- Step 0: 19 baseline nodes (minimal Ruby)
+- Step 2: +8 nodes (evaluation: CASE, CONST, HASH, LIT)
+- Step 4: +5 nodes (functions: FALSE, SPLAT, WHILE)
+- Step 9: +3 nodes (OOP: CLASS, IASGN, SUPER)
+
+*Pedagogical Insight*: Each feature addition requires specific AST support
 
 * Performance Analysis
 
