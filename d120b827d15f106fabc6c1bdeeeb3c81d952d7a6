@@ -1,0 +1,48 @@
+Context and Details for Step 2 Evaluation Implementation
+
+BACKGROUND:
+Step 2 adds actual evaluation of arithmetic expressions following SICP principles.
+This establishes the core eval/apply loop that will be extended in later steps.
+
+CHANGES MADE:
+1. step2_eval.rb:
+   - EVAL function that handles symbols, lists, vectors, hash-maps
+   - eval_ast helper for recursive evaluation
+   - apply_fn for function application
+   - Basic arithmetic operators (+, -, *, /)
+   - Simple environment using Ruby hash (only for builtins)
+
+2. README updates:
+   - Added badges for Ruby version, MAL, MIT license, SICP, experimental status
+   - Added note about experimental nature
+   - Added research context section
+   - Clarified this is an exploration
+
+TESTING:
+Manual testing shows arithmetic evaluation works:
+- (+ 1 2) => 3
+- (* 4 (+ 2 3)) => 20
+- (/ 10 2) => 5
+- Nested expressions work correctly
+
+PRECONDITIONS:
+- Reader and printer modules working
+- No arrays/hashes in Lisp data (only in host env)
+
+POSTCONDITIONS:
+- Can evaluate arithmetic expressions
+- Proper error handling for unknown symbols
+- Foundation for adding more functions
+
+EXPERIMENTS:
+The use of a Ruby hash for repl_env is acceptable since it's the host
+environment, not part of the Lisp data structures. User data structures
+remain cons-cell based.
+
+DEVIATIONS:
+Using Ruby hash for builtin environment (pragmatic choice)
+
+FOLLOW-UP:
+1. Create expect tests for step2
+2. Add collaborator to GitHub repo
+3. Implement step3 with proper environment handling
