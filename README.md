@@ -174,7 +174,9 @@ This project implements a complete Lisp interpreter following the [Make-a-Lisp (
 
 The project includes `mal-mode.el` which provides syntax highlighting, indentation, and REPL integration for MAL files in Emacs.
 
-![MAL Mode in Emacs](screenshots/mal-emacs-gui-full.png)
+![MAL Development Environment](screenshots/mal-development-environment.png)
+
+*Complete development workflow: mal-mode syntax highlighting (left), interactive REPL (top-right), project status (bottom-right)*
 
 #### Features:
 - **Syntax Highlighting**: Special forms, functions, keywords, and literals are color-coded
@@ -466,11 +468,7 @@ Comprehensive documentation is available in the [`docs/`](docs/) directory:
 
 ## Development Environment
 
-The complete MAL development workflow with integrated editor, REPL, and testing:
-
-![MAL Development Environment](screenshots/mal-development-environment.png)
-
-*Tmux-based development setup showing: Emacs with mal-mode (left), interactive MAL REPL (top-right), and project status (bottom-right)*
+For the complete development setup with tmux integration, see the [Eshell MAL Workflow](experiments/012-eshell-mal-workflow/) experiment, or use the screenshot generation tools in `scripts/screenshot.sh` to capture your own development session.
 
 ## License
 
