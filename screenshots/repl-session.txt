@@ -5,40 +5,25 @@
 ║  No arrays, no hashes, no blocks - just pairs all the way down    ║
 ║                                                                   ║
 ║  Type expressions at the prompt. Some examples:                   ║
-║    (+ 1 2 3)                    ; =&gt; 6                            ║
+║    (+ 1 2 3)                    ; => 6                            ║
 ║    (def! fact                   ; Define recursive factorial      ║
 ║      (fn* (n)                                                     ║
 ║        (if (= n 0)                                                ║
 ║          1                                                        ║
 ║          (* n (fact (- n 1))))))                                  ║
-║    (fact 5)                     ; =&gt; 120                          ║
+║    (fact 5)                     ; => 120                          ║
 ║                                                                   ║
 ║  Special forms: def! let* if fn* do quote                         ║
-║  Built-ins: + - * / = &lt; &gt; &lt;= &gt;= list list? empty? count not       ║
+║  Built-ins: + - * / = < > <= >= list list? empty? count not       ║
 ║                                                                   ║
 ║  Press Ctrl-D to exit                                             ║
 ╚═══════════════════════════════════════════════════════════════════╝
 
-&gt; (+ 1 2)
-=&gt; 3
-&gt; (def! x 42)
+> (def! x 42)
 Error: Unbound symbol: def!
-&gt;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+> (+ x 8)
+Error: Unbound symbol: x
+>
 
 
 

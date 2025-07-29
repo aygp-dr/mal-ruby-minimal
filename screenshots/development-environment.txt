@@ -1,0 +1,47 @@
++WEBDAV_DEFAULT_USER +WEBDAV_PORT +WEBDAV_ROOT +WEBDAV_USER
+
+[1m[33mjwalsh[0m in [1;2m[32m🌐 nexushive[0m in [1m[36mmal-ruby-minimal[0m on [1m[35m main[0m [1m[31m[✘?][0m via
+[1m[31m💎 v3.3.8 [0m
+[1m[32m❯[0m ruby mal_minimal.rb
+╔═════════════════════════════════════════════════════════════
+══════╗
+║                    MAL - Make a Lisp (Ruby Minimal)
+      ║
+║
+      ║
+║  A pedagogical Lisp interpreter built with only cons cells
+      ║
+║  No arrays, no hashes, no blocks - just pairs all the way do
+wn    ║
+║
+      ║
+║  Type expressions at the prompt. Some examples:
+      ║
+║    (+ 1 2 3)                    ; => 6
+      ║
+║    (def! fact                   ; Define recursive factorial
+      ║
+║      (fn* (n)
+      ║
+║        (if (= n 0)
+      ║
+║          1
+      ║
+║          (* n (fact (- n 1))))))
+      ║
+║    (fact 5)                     ; => 120
+      ║
+║
+      ║
+║  Special forms: def! let* if fn* do quote
+      ║
+║  Built-ins: + - * / = < > <= >= list list? empty? count not
+      ║
+║
+      ║
+║  Press Ctrl-D to exit
+      ║
+╚═════════════════════════════════════════════════════════════
+══════╝
+
+>
