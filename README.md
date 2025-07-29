@@ -347,6 +347,27 @@ This implementation is part of research into:
 2. SICP-style minimalist language construction
 3. The MAL (Make a Lisp) step-by-step approach to building interpreters
 
+## Educational Journey
+
+This project has undergone 5 comprehensive pedagogical review passes:
+
+1. **Pass 1**: Added extensive code comments and documentation structure
+2. **Pass 2**: Created visual aids and step-by-step guides
+3. **Pass 3**: Enhanced error handling and debugging features
+4. **Pass 4**: Developed comprehensive learning materials and style guides
+5. **Pass 5**: Final polish, assessment rubrics, and reflection
+
+The result is not just a Lisp interpreter, but a complete educational package designed to teach interpreter construction from first principles.
+
+## Documentation
+
+Comprehensive documentation is available in the [`docs/`](docs/) directory:
+- **[Documentation Index](docs/README.md)** - Start here for all guides
+- **[Learning Guide](docs/learning-guide.md)** - Step-by-step introduction
+- **[Project Guide](docs/project-guide.md)** - Practical usage guide
+- **[Assessment Rubric](docs/assessment-rubric.md)** - For educators
+- **[Project Reflection](docs/project-reflection.md)** - Lessons learned
+
 ## License
 
 MIT
