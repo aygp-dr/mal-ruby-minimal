@@ -1,0 +1,24 @@
+WHY: Students need structured exercises and awareness of common mistakes to learn effectively.
+
+CONTEXT: Pass 3 of pedagogical review. Based on teaching experience, students learn best with:
+1. Progressive exercises that build on each other
+2. Awareness of common mistakes before they make them
+3. Concrete debugging strategies
+
+CHANGES:
+- Created 7-level exercise progression from basics to research projects
+- Documented 10 most common pitfalls with explanations
+- Added debugging tips and visual debugging strategies
+- Included assessment rubric and solution hints
+
+TESTING:
+- Exercises tested for clarity and progression
+- Pitfall examples verified against actual implementation
+- Solution hints checked for correctness
+
+IMPACT: Students have a clear learning path with:
+- Self-paced exercises at appropriate difficulty
+- Preemptive guidance on common mistakes
+- Practical debugging techniques
+
+FUTURE: Consider adding automated exercise checking or online judge system.
