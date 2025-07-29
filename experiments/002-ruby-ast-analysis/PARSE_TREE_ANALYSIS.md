@@ -60,6 +60,24 @@ Web framework introduces different structural complexity:
 
 **Domain Difference**: ActiveAdmin shows OOP/DSL patterns vs MAL's functional approach.
 
+#### Liquid Template Engine (228KB)
+Template processing reveals specialized patterns:
+- **attr_reader/attr_accessor** - Heavy attribute declaration (7+ attributes per class)
+- **NODE_LIT** - Symbol-heavy metaprogramming (`:scopes`, `:errors`, `:registers`)
+- Template-specific state management patterns
+- Exception handling and resource limiting structures
+
+**Template Insight**: Template engines require extensive state management infrastructure.
+
+#### StepA Self-Hosting (1.55MB - 13x larger than step9!)
+**Massive Complexity Jump**: Self-hosting creates the most complex parse tree:
+- **NODE_ID: 4439** - Highest node count seen (vs 101 in step0)
+- **1323 lines** of Ruby code for complete MAL implementation
+- **MalException class** - Custom exception handling infrastructure
+- **Complete core function library** - Every Lisp primitive implemented
+
+**Self-Hosting Discovery**: Contains the entire MAL language implementation within Ruby, creating recursive complexity patterns.
+
 ## Complexity Growth Analysis
 
 ### File Size Progression (bytes):

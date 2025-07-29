@@ -1,4 +1,4 @@
-# Ignore research directory with parse trees
+# Ignore research directory with parse trees and cached files
 research/
 
 # Ignore generated analysis files
