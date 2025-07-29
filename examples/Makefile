@@ -46,3 +46,30 @@ test:
 	@echo "Testing MAL implementation..."
 	@echo "(+ 1 2)" | ruby ../mal_minimal.rb | grep -q "3" && echo "✓ Addition works" || echo "✗ Addition failed"
 	@echo "(* 3 4)" | ruby ../mal_minimal.rb | grep -q "12" && echo "✓ Multiplication works" || echo "✗ Multiplication failed"
+
+# Run new example files
+test-new-examples:
+	@echo "Testing new MAL examples..."
+	@echo ""
+	@echo "🧮 Testing Algorithms..."
+	@ruby ../mal_minimal.rb algorithms.mal > /dev/null 2>&1 && echo "✓ Algorithms example works" || echo "✗ Algorithms example failed"
+	@echo ""
+	@echo "🏗️ Testing Data Structures..."
+	@ruby ../mal_minimal.rb data-structures.mal > /dev/null 2>&1 && echo "✓ Data structures example works" || echo "✗ Data structures example failed"
+	@echo ""
+	@echo "🎯 Testing Functional Patterns..."
+	@ruby ../mal_minimal.rb functional-patterns.mal > /dev/null 2>&1 && echo "✓ Functional patterns example works" || echo "✗ Functional patterns example failed"
+
+# Run examples with output
+run-examples:
+	@echo "Running MAL Example Files"
+	@echo "========================"
+	@echo ""
+	@echo "📁 Available examples:"
+	@ls -1 *.mal 2>/dev/null | sed 's/^/  - /'
+	@echo ""
+	@echo "Running factorial.mal:"
+	@ruby ../mal_minimal.rb factorial.mal 2>/dev/null || echo "(Example not found)"
+	@echo ""
+	@echo "Running fibonacci.mal:"
+	@ruby ../mal_minimal.rb fibonacci.mal 2>/dev/null || echo "(Example not found)"

@@ -1,0 +1,35 @@
+;; This file demonstrates MAL syntax highlighting
+
+;; Definitions get highlighted
+(def! factorial (fn* [n]
+  (if (= n 0)
+      1
+      (* n (factorial (- n 1))))))
+
+;; Special forms are highlighted differently
+(let* [x 10
+       y 20
+       sum (+ x y)]
+  (println "Sum:" sum))
+
+;; Macros
+(defmacro! unless (fn* [pred a b]
+  `(if ~pred ~b ~a)))
+
+;; Try-catch blocks
+(try*
+  (/ 1 0)
+  (catch* e
+    (println "Error:" e)))
+
+;; Keywords and atoms
+(def! config {:debug true
+              :verbose false
+              :level 3})
+
+(def! counter (atom 0))
+(swap! counter inc)
+
+;; SICP examples work too
+(load-file "chapter2_church_numerals.mal")
+(church->int (church-add church-two church-three))

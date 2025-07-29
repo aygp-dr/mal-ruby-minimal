@@ -1,0 +1,261 @@
+;; Data Structures implemented in MAL
+;; Using only cons cells to build complex structures
+
+;; =============================================================================
+;; Stack - LIFO (Last In First Out)
+;; =============================================================================
+
+(def! make-stack (fn* ()
+  (atom '())))
+
+(def! stack-push! (fn* (stack item)
+  (swap! stack (fn* (s) (cons item s)))))
+
+(def! stack-pop! (fn* (stack)
+  (let* (top (first @stack))
+    (swap! stack rest)
+    top)))
+
+(def! stack-peek (fn* (stack)
+  (first @stack)))
+
+(def! stack-empty? (fn* (stack)
+  (empty? @stack)))
+
+;; =============================================================================
+;; Queue - FIFO (First In First Out)
+;; =============================================================================
+
+(def! make-queue (fn* ()
+  (atom (list '() '())))) ; (front . back)
+
+(def! queue-enqueue! (fn* (queue item)
+  (swap! queue (fn* (q)
+    (list (first q) (cons item (nth q 1)))))))
+
+(def! queue-dequeue! (fn* (queue)
+  (let* (q @queue
+         front (first q)
+         back (nth q 1))
+    (if (empty? front)
+      (if (empty? back)
+        nil
+        (do
+          (reset! queue (list (rest (reverse back)) '()))
+          (first (reverse back))))
+      (do
+        (reset! queue (list (rest front) back))
+        (first front))))))
+
+(def! queue-empty? (fn* (queue)
+  (let* (q @queue)
+    (and (empty? (first q)) (empty? (nth q 1))))))
+
+;; =============================================================================
+;; Binary Tree
+;; =============================================================================
+
+(def! make-tree-node (fn* (value left right)
+  (list value left right)))
+
+(def! tree-value (fn* (node) (first node)))
+(def! tree-left (fn* (node) (nth node 1)))
+(def! tree-right (fn* (node) (nth node 2)))
+
+(def! tree-insert (fn* (tree value)
+  (if (nil? tree)
+    (make-tree-node value nil nil)
+    (let* (node-value (tree-value tree))
+      (cond
+        (< value node-value)
+          (make-tree-node node-value
+                          (tree-insert (tree-left tree) value)
+                          (tree-right tree))
+        (> value node-value)
+          (make-tree-node node-value
+                          (tree-left tree)
+                          (tree-insert (tree-right tree) value))
+        :else tree))))) ; Value already exists
+
+(def! tree-search (fn* (tree value)
+  (if (nil? tree)
+    false
+    (let* (node-value (tree-value tree))
+      (cond
+        (= value node-value) true
+        (< value node-value) (tree-search (tree-left tree) value)
+        :else (tree-search (tree-right tree) value))))))
+
+(def! tree-inorder (fn* (tree)
+  (if (nil? tree)
+    '()
+    (concat (tree-inorder (tree-left tree))
+            (list (tree-value tree))
+            (tree-inorder (tree-right tree))))))
+
+(def! tree-preorder (fn* (tree)
+  (if (nil? tree)
+    '()
+    (concat (list (tree-value tree))
+            (tree-preorder (tree-left tree))
+            (tree-preorder (tree-right tree))))))
+
+(def! tree-height (fn* (tree)
+  (if (nil? tree)
+    0
+    (+ 1 (max (tree-height (tree-left tree))
+              (tree-height (tree-right tree)))))))
+
+(def! max (fn* (a b) (if (> a b) a b)))
+
+;; =============================================================================
+;; Association List (Key-Value Store)
+;; =============================================================================
+
+(def! make-alist (fn* () '()))
+
+(def! alist-get (fn* (alist key)
+  (if (empty? alist)
+    nil
+    (let* (pair (first alist))
+      (if (= (first pair) key)
+        (nth pair 1)
+        (alist-get (rest alist) key))))))
+
+(def! alist-put (fn* (alist key value)
+  (if (empty? alist)
+    (list (list key value))
+    (let* (pair (first alist))
+      (if (= (first pair) key)
+        (cons (list key value) (rest alist))
+        (cons pair (alist-put (rest alist) key value)))))))
+
+(def! alist-remove (fn* (alist key)
+  (if (empty? alist)
+    '()
+    (let* (pair (first alist))
+      (if (= (first pair) key)
+        (rest alist)
+        (cons pair (alist-remove (rest alist) key)))))))
+
+(def! alist-keys (fn* (alist)
+  (map (fn* (pair) (first pair)) alist)))
+
+(def! alist-values (fn* (alist)
+  (map (fn* (pair) (nth pair 1)) alist)))
+
+;; =============================================================================
+;; Graph (Adjacency List Representation)
+;; =============================================================================
+
+(def! make-graph (fn* () '()))
+
+(def! graph-add-vertex (fn* (graph vertex)
+  (if (alist-get graph vertex)
+    graph
+    (alist-put graph vertex '()))))
+
+(def! graph-add-edge (fn* (graph from to)
+  (let* (neighbors (or (alist-get graph from) '())
+         new-neighbors (if (member? to neighbors)
+                         neighbors
+                         (cons to neighbors)))
+    (alist-put graph from new-neighbors))))
+
+(def! member? (fn* (item lst)
+  (cond
+    (empty? lst) false
+    (= item (first lst)) true
+    :else (member? item (rest lst)))))
+
+(def! graph-neighbors (fn* (graph vertex)
+  (or (alist-get graph vertex) '())))
+
+;; Depth-First Search
+(def! graph-dfs (fn* (graph start)
+  (let* (dfs-helper
+         (fn* (vertex visited)
+           (if (member? vertex visited)
+             visited
+             (let* (new-visited (cons vertex visited)
+                    neighbors (graph-neighbors graph vertex))
+               (reduce (fn* (vis v) (dfs-helper v vis))
+                       new-visited
+                       neighbors)))))
+    (reverse (dfs-helper start '())))))
+
+;; =============================================================================
+;; Test Suite
+;; =============================================================================
+
+(def! test-data-structures (fn* ()
+  (do
+    (println "🏗️ Testing Data Structures...")
+    (println "===========================")
+    
+    ;; Test Stack
+    (println "\n📚 Stack Tests:")
+    (let* (s (make-stack))
+      (stack-push! s 1)
+      (stack-push! s 2)
+      (stack-push! s 3)
+      (println "  Pushed 1, 2, 3")
+      (println "  Peek:" (stack-peek s))
+      (println "  Pop:" (stack-pop! s))
+      (println "  Pop:" (stack-pop! s))
+      (println "  Empty?" (stack-empty? s)))
+    
+    ;; Test Queue
+    (println "\n📬 Queue Tests:")
+    (let* (q (make-queue))
+      (queue-enqueue! q 1)
+      (queue-enqueue! q 2)
+      (queue-enqueue! q 3)
+      (println "  Enqueued 1, 2, 3")
+      (println "  Dequeue:" (queue-dequeue! q))
+      (println "  Dequeue:" (queue-dequeue! q))
+      (println "  Empty?" (queue-empty? q)))
+    
+    ;; Test Binary Tree
+    (println "\n🌳 Binary Tree Tests:")
+    (let* (tree nil
+           tree (tree-insert tree 5)
+           tree (tree-insert tree 3)
+           tree (tree-insert tree 7)
+           tree (tree-insert tree 1)
+           tree (tree-insert tree 9))
+      (println "  Inserted: 5, 3, 7, 1, 9")
+      (println "  Inorder:" (tree-inorder tree))
+      (println "  Preorder:" (tree-preorder tree))
+      (println "  Search for 7:" (tree-search tree 7))
+      (println "  Search for 6:" (tree-search tree 6))
+      (println "  Height:" (tree-height tree)))
+    
+    ;; Test Association List
+    (println "\n📋 Association List Tests:")
+    (let* (alist (make-alist)
+           alist (alist-put alist "name" "Alice")
+           alist (alist-put alist "age" 30)
+           alist (alist-put alist "city" "Boston"))
+      (println "  Added: name->Alice, age->30, city->Boston")
+      (println "  Get 'name':" (alist-get alist "name"))
+      (println "  Keys:" (alist-keys alist))
+      (println "  Values:" (alist-values alist)))
+    
+    ;; Test Graph
+    (println "\n🕸️ Graph Tests:")
+    (let* (g (make-graph)
+           g (graph-add-vertex g "A")
+           g (graph-add-vertex g "B")
+           g (graph-add-vertex g "C")
+           g (graph-add-edge g "A" "B")
+           g (graph-add-edge g "A" "C")
+           g (graph-add-edge g "B" "C"))
+      (println "  Created graph: A->B, A->C, B->C")
+      (println "  Neighbors of A:" (graph-neighbors g "A"))
+      (println "  DFS from A:" (graph-dfs g "A")))
+    
+    (println "\n✅ All data structure tests completed!"))))
+
+;; Run tests when loaded
+(test-data-structures)

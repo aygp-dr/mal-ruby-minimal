@@ -1,0 +1,211 @@
+;; Common algorithms implemented in MAL
+;; Demonstrates MAL's capabilities for real-world programming
+
+;; =============================================================================
+;; Sorting Algorithms
+;; =============================================================================
+
+;; Bubble Sort - O(n²) time complexity
+(def! bubble-sort (fn* (lst)
+  (let* (swap-adjacent (fn* (lst)
+                         (if (or (empty? lst) (empty? (rest lst)))
+                           lst
+                           (if (> (first lst) (first (rest lst)))
+                             (cons (first (rest lst))
+                                   (cons (first lst)
+                                         (swap-adjacent (rest (rest lst)))))
+                             (cons (first lst)
+                                   (swap-adjacent (rest lst))))))
+         bubble-pass (fn* (lst changed)
+                       (let* (new-lst (swap-adjacent lst))
+                         (if (= lst new-lst)
+                           lst
+                           (bubble-pass new-lst true)))))
+    (bubble-pass lst false))))
+
+;; Quick Sort - O(n log n) average time complexity
+(def! quicksort (fn* (lst)
+  (if (empty? lst)
+    '()
+    (let* (pivot (first lst)
+           rest-lst (rest lst)
+           less (filter (fn* (x) (<= x pivot)) rest-lst)
+           greater (filter (fn* (x) (> x pivot)) rest-lst))
+      (concat (quicksort less)
+              (list pivot)
+              (quicksort greater))))))
+
+;; Merge Sort - O(n log n) time complexity
+(def! merge (fn* (left right)
+  (cond
+    (empty? left) right
+    (empty? right) left
+    (<= (first left) (first right))
+      (cons (first left) (merge (rest left) right))
+    :else
+      (cons (first right) (merge left (rest right))))))
+
+(def! merge-sort (fn* (lst)
+  (if (<= (count lst) 1)
+    lst
+    (let* (mid (/ (count lst) 2)
+           left (take mid lst)
+           right (drop mid lst))
+      (merge (merge-sort left) (merge-sort right))))))
+
+;; Helper functions for merge-sort
+(def! take (fn* (n lst)
+  (if (or (= n 0) (empty? lst))
+    '()
+    (cons (first lst) (take (- n 1) (rest lst))))))
+
+(def! drop (fn* (n lst)
+  (if (or (= n 0) (empty? lst))
+    lst
+    (drop (- n 1) (rest lst)))))
+
+;; =============================================================================
+;; Searching Algorithms
+;; =============================================================================
+
+;; Linear Search - O(n) time complexity
+(def! linear-search (fn* (item lst)
+  (cond
+    (empty? lst) nil
+    (= item (first lst)) 0
+    :else
+      (let* (result (linear-search item (rest lst)))
+        (if result
+          (+ 1 result)
+          nil)))))
+
+;; Binary Search - O(log n) time complexity (requires sorted list)
+(def! binary-search (fn* (item lst)
+  (let* (binary-search-helper
+         (fn* (item lst low high)
+           (if (> low high)
+             nil
+             (let* (mid (/ (+ low high) 2)
+                    mid-val (nth lst mid))
+               (cond
+                 (= mid-val item) mid
+                 (< mid-val item) (binary-search-helper item lst (+ mid 1) high)
+                 :else (binary-search-helper item lst low (- mid 1)))))))
+    (binary-search-helper item lst 0 (- (count lst) 1)))))
+
+;; =============================================================================
+;; Mathematical Algorithms
+;; =============================================================================
+
+;; Greatest Common Divisor (Euclidean algorithm)
+(def! gcd (fn* (a b)
+  (if (= b 0)
+    a
+    (gcd b (mod a b)))))
+
+;; Least Common Multiple
+(def! lcm (fn* (a b)
+  (/ (* a b) (gcd a b))))
+
+;; Prime number check
+(def! prime? (fn* (n)
+  (cond
+    (<= n 1) false
+    (= n 2) true
+    (even? n) false
+    :else
+      (let* (check-divisor
+             (fn* (d)
+               (cond
+                 (> (* d d) n) true
+                 (= (mod n d) 0) false
+                 :else (check-divisor (+ d 2)))))
+        (check-divisor 3)))))
+
+(def! even? (fn* (n) (= (mod n 2) 0)))
+
+;; Generate prime numbers up to n (Sieve of Eratosthenes)
+(def! sieve (fn* (n)
+  (let* (mark-multiples
+         (fn* (p nums)
+           (filter (fn* (x) (or (= x p) (not (= (mod x p) 0)))) nums))
+         sieve-helper
+         (fn* (nums primes)
+           (if (empty? nums)
+             (reverse primes)
+             (let* (p (first nums)
+                    remaining (mark-multiples p (rest nums)))
+               (if (> (* p p) n)
+                 (reverse (concat (reverse nums) primes))
+                 (sieve-helper remaining (cons p primes)))))))
+    (if (< n 2)
+      '()
+      (sieve-helper (range 2 (+ n 1)) '())))))
+
+(def! range (fn* (start end)
+  (if (>= start end)
+    '()
+    (cons start (range (+ start 1) end)))))
+
+;; =============================================================================
+;; String Algorithms
+;; =============================================================================
+
+;; Check if string is palindrome
+(def! palindrome? (fn* (s)
+  (let* (chars (seq s)
+         reversed (reverse chars))
+    (= chars reversed))))
+
+(def! seq (fn* (s)
+  (if (= s "")
+    '()
+    (cons (first s) (seq (rest s))))))
+
+(def! reverse (fn* (lst)
+  (if (empty? lst)
+    '()
+    (concat (reverse (rest lst)) (list (first lst))))))
+
+;; =============================================================================
+;; Test Suite
+;; =============================================================================
+
+(def! test-algorithms (fn* ()
+  (do
+    (println "🧮 Testing Algorithms...")
+    (println "=====================")
+    
+    ;; Test sorting
+    (println "\n📊 Sorting Tests:")
+    (let* (test-list '(5 2 8 1 9 3))
+      (println "  Original:" test-list)
+      (println "  Bubble sort:" (bubble-sort test-list))
+      (println "  Quick sort:" (quicksort test-list))
+      (println "  Merge sort:" (merge-sort test-list)))
+    
+    ;; Test searching
+    (println "\n🔍 Search Tests:")
+    (let* (sorted-list '(1 2 3 5 8 9))
+      (println "  List:" sorted-list)
+      (println "  Linear search for 5:" (linear-search 5 sorted-list))
+      (println "  Binary search for 5:" (binary-search 5 sorted-list))
+      (println "  Linear search for 7:" (linear-search 7 sorted-list)))
+    
+    ;; Test math algorithms
+    (println "\n🔢 Math Tests:")
+    (println "  GCD(48, 18):" (gcd 48 18))
+    (println "  LCM(12, 8):" (lcm 12 8))
+    (println "  Is 17 prime?" (prime? 17))
+    (println "  Is 18 prime?" (prime? 18))
+    (println "  Primes up to 20:" (sieve 20))
+    
+    ;; Test string algorithms
+    (println "\n📝 String Tests:")
+    (println "  Is 'racecar' a palindrome?" (palindrome? "racecar"))
+    (println "  Is 'hello' a palindrome?" (palindrome? "hello"))
+    
+    (println "\n✅ All algorithm tests completed!"))))
+
+;; Run tests when loaded
+(test-algorithms)

@@ -1,0 +1,252 @@
+;; Functional Programming Patterns in MAL
+;; Advanced techniques using higher-order functions and composition
+
+;; =============================================================================
+;; Function Composition
+;; =============================================================================
+
+(def! compose (fn* (f g)
+  (fn* (x) (f (g x)))))
+
+(def! compose-many (fn* (& fs)
+  (reduce compose identity fs)))
+
+(def! identity (fn* (x) x))
+
+;; Pipeline - compose in reverse order (more intuitive)
+(def! pipe (fn* (& fs)
+  (apply compose-many (reverse fs))))
+
+;; =============================================================================
+;; Partial Application and Currying
+;; =============================================================================
+
+(def! partial (fn* (f & args)
+  (fn* (& more-args)
+    (apply f (concat args more-args)))))
+
+(def! curry (fn* (f n)
+  (if (= n 0)
+    (f)
+    (fn* (x)
+      (curry (partial f x) (- n 1))))))
+
+;; Flip argument order
+(def! flip (fn* (f)
+  (fn* (x y) (f y x))))
+
+;; =============================================================================
+;; Monadic Patterns
+;; =============================================================================
+
+;; Maybe monad for handling nil values
+(def! maybe-bind (fn* (value f)
+  (if (nil? value)
+    nil
+    (f value))))
+
+(def! maybe-chain (fn* (value & fs)
+  (reduce maybe-bind value fs)))
+
+;; Either monad for error handling
+(def! make-left (fn* (error) (list :left error)))
+(def! make-right (fn* (value) (list :right value)))
+(def! left? (fn* (either) (= (first either) :left)))
+(def! right? (fn* (either) (= (first either) :right)))
+(def! either-value (fn* (either) (nth either 1)))
+
+(def! either-bind (fn* (either f)
+  (if (left? either)
+    either
+    (f (either-value either)))))
+
+(def! either-chain (fn* (either & fs)
+  (reduce either-bind either fs)))
+
+;; =============================================================================
+;; Lazy Evaluation Patterns
+;; =============================================================================
+
+;; Infinite sequences using thunks
+(def! make-thunk (fn* (f) (list :thunk f)))
+(def! thunk? (fn* (x) (and (list? x) (= (first x) :thunk))))
+(def! force (fn* (thunk) ((nth thunk 1))))
+
+(def! lazy-seq (fn* (head tail-thunk)
+  (list head tail-thunk)))
+
+(def! lazy-first (fn* (lseq) (first lseq)))
+(def! lazy-rest (fn* (lseq) (force (nth lseq 1))))
+
+;; Infinite sequence of natural numbers
+(def! naturals-from (fn* (n)
+  (lazy-seq n (make-thunk (fn* () (naturals-from (+ n 1)))))))
+
+(def! take-lazy (fn* (n lseq)
+  (if (or (= n 0) (nil? lseq))
+    '()
+    (cons (lazy-first lseq)
+          (take-lazy (- n 1) (lazy-rest lseq))))))
+
+;; =============================================================================
+;; Memoization
+;; =============================================================================
+
+(def! memoize (fn* (f)
+  (let* (cache (atom {}))
+    (fn* (& args)
+      (let* (cached (get @cache args))
+        (if cached
+          cached
+          (let* (result (apply f args))
+            (swap! cache assoc args result)
+            result)))))))
+
+;; =============================================================================
+;; Transducers (simplified)
+;; =============================================================================
+
+(def! mapping (fn* (f)
+  (fn* (rf)
+    (fn* (result input)
+      (rf result (f input))))))
+
+(def! filtering (fn* (pred)
+  (fn* (rf)
+    (fn* (result input)
+      (if (pred input)
+        (rf result input)
+        result)))))
+
+(def! transduce (fn* (xform f init coll)
+  (reduce (xform f) init coll)))
+
+;; =============================================================================
+;; Advanced List Operations
+;; =============================================================================
+
+(def! fold-left reduce)
+
+(def! fold-right (fn* (f init lst)
+  (if (empty? lst)
+    init
+    (f (first lst) (fold-right f init (rest lst))))))
+
+(def! unfold (fn* (f init pred)
+  (if (pred init)
+    '()
+    (let* (pair (f init))
+      (cons (first pair) (unfold f (nth pair 1) pred))))))
+
+(def! zip (fn* (& lists)
+  (if (some empty? lists)
+    '()
+    (cons (map first lists)
+          (apply zip (map rest lists))))))
+
+(def! some (fn* (pred lst)
+  (cond
+    (empty? lst) false
+    (pred (first lst)) true
+    :else (some pred (rest lst)))))
+
+(def! every (fn* (pred lst)
+  (cond
+    (empty? lst) true
+    (not (pred (first lst))) false
+    :else (every pred (rest lst)))))
+
+;; =============================================================================
+;; Combinators
+;; =============================================================================
+
+;; Y combinator for anonymous recursion
+(def! Y (fn* (f)
+  ((fn* (x) (f (fn* (& args) (apply (x x) args))))
+   (fn* (x) (f (fn* (& args) (apply (x x) args)))))))
+
+;; Fixed point combinator
+(def! fix (fn* (f)
+  (fn* (& args)
+    (apply (f (fix f)) args))))
+
+;; =============================================================================
+;; Test Suite
+;; =============================================================================
+
+(def! test-functional-patterns (fn* ()
+  (do
+    (println "🎯 Testing Functional Patterns...")
+    (println "=================================")
+    
+    ;; Test composition
+    (println "\n🔗 Composition Tests:")
+    (let* (add1 (fn* (x) (+ x 1))
+           double (fn* (x) (* x 2))
+           add1-then-double (compose double add1)
+           process (pipe add1 double add1))
+      (println "  (compose double add1) 5:" (add1-then-double 5))
+      (println "  (pipe add1 double add1) 5:" (process 5)))
+    
+    ;; Test partial application
+    (println "\n🧩 Partial Application Tests:")
+    (let* (add (fn* (x y) (+ x y))
+           add5 (partial add 5)
+           multiply (curry (fn* (x y z) (* x y z)) 3))
+      (println "  (partial add 5) 3:" (add5 3))
+      (println "  Curried multiply 2 3 4:" (((multiply 2) 3) 4)))
+    
+    ;; Test Maybe monad
+    (println "\n❓ Maybe Monad Tests:")
+    (let* (safe-div (fn* (x) (if (= x 0) nil (/ 10 x)))
+           chain-result (maybe-chain 2 safe-div safe-div))
+      (println "  10 / 2 / result:" chain-result)
+      (println "  With 0:" (maybe-chain 0 safe-div safe-div)))
+    
+    ;; Test Either monad
+    (println "\n↔️ Either Monad Tests:")
+    (let* (safe-sqrt (fn* (x)
+                       (if (< x 0)
+                         (make-left "Cannot take sqrt of negative")
+                         (make-right (* x x)))))  ; Simplified sqrt
+           result1 (either-chain (make-right 4) safe-sqrt)
+           result2 (either-chain (make-right -4) safe-sqrt))
+      (println "  sqrt(4):" result1)
+      (println "  sqrt(-4):" result2))
+    
+    ;; Test lazy sequences
+    (println "\n💤 Lazy Sequence Tests:")
+    (let* (nats (naturals-from 1))
+      (println "  First 10 naturals:" (take-lazy 10 nats)))
+    
+    ;; Test memoization
+    (println "\n📝 Memoization Tests:")
+    (let* (slow-fib (fn* (n)
+                      (do
+                        ; (println "  Computing fib" n)
+                        (if (< n 2)
+                          n
+                          (+ (slow-fib (- n 1)) (slow-fib (- n 2))))))
+           fast-fib (memoize slow-fib))
+      (println "  Memoized fib(10):" (fast-fib 10)))
+    
+    ;; Test transducers
+    (println "\n🔄 Transducer Tests:")
+    (let* (xform (compose-many (mapping (fn* (x) (* x 2)))
+                               (filtering (fn* (x) (> x 5))))
+           result (transduce xform cons '() '(1 2 3 4 5)))
+      (println "  map(*2) then filter(>5) on [1,2,3,4,5]:" (reverse result)))
+    
+    ;; Test advanced list operations
+    (println "\n📋 Advanced List Tests:")
+    (println "  zip [1,2,3] [a,b,c]:" (zip '(1 2 3) '(a b c)))
+    (println "  every even? [2,4,6]:" (every even? '(2 4 6)))
+    (println "  some odd? [2,4,5]:" (some odd? '(2 4 5)))
+    
+    (println "\n✅ All functional pattern tests completed!"))))
+
+(def! even? (fn* (n) (= (mod n 2) 0)))
+(def! odd? (fn* (n) (not (even? n))))
+
+;; Run tests when loaded
+(test-functional-patterns)
