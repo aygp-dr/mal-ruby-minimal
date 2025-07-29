@@ -168,6 +168,39 @@ This project implements a complete Lisp interpreter following the [Make-a-Lisp (
 - **Error Handling**: Exception handling with `try*/catch*`
 - **Atoms**: Mutable state containers with `atom`, `deref`, `reset!`, `swap!`
 
+## IDE/Editor Support
+
+### Emacs Integration with mal-mode
+
+The project includes `mal-mode.el` which provides syntax highlighting, indentation, and REPL integration for MAL files in Emacs.
+
+![MAL Mode in Emacs](screenshots/mal-emacs-gui-full.png)
+
+#### Features:
+- **Syntax Highlighting**: Special forms, functions, keywords, and literals are color-coded
+- **Automatic Indentation**: Proper Lisp-style indentation with TAB
+- **Paredit Support**: Structured editing of S-expressions
+- **REPL Integration**: Send expressions directly to MAL REPL
+- **File Association**: `.mal` files automatically activate mal-mode
+
+#### Setup:
+```elisp
+;; Add to your Emacs init file
+(load-file "path/to/mal-mode.el")
+
+;; Optional: Enable paredit
+(add-hook 'mal-mode-hook #'enable-paredit-mode)
+```
+
+#### Workflow Example:
+1. Open a `.mal` file - mal-mode activates automatically
+2. `C-c C-z` - Start MAL REPL in eshell
+3. `C-c C-e` - Evaluate expression at point
+4. `C-c C-r` - Evaluate region
+5. `C-c C-l` - Load current file
+
+See `experiments/012-eshell-mal-workflow/` for a complete integrated development setup.
+
 ## Running the REPL
 
 ```bash

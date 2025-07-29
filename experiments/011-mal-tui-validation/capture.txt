@@ -1,0 +1,62 @@
+[7mFile Edit Options Buffers Tools Lisp Help
+[0m[38;5;208m; MAL Macro Examples [39m
+[38;5;208m; Demonstrates the power of macros in MAL [39m
+
+[38;5;208m; Simple macro - unless [39m
+([96mdefmacro![39m [38;5;117munless[39m ([96mfn*[39m (pred a b)
+  `([96mif[39m ~pred ~b ~a)))
+
+([38;5;152mprintln[39m [38;5;216m"unless macro:"[39m)
+([38;5;152mprintln[39m [38;5;216m"(unless false 'yes 'no) =>"[39m (unless [38;5;122mfalse[39m [38;5;216m"yes"[39m [38;5;216m"no"[39m))
+([38;5;152mprintln[39m [38;5;216m"(unless true 'yes 'no) =>"[39m (unless [38;5;122mtrue[39m [38;5;216m"yes"[39m [38;5;216m"no"[39m))
+
+[38;5;208m; Macro for 'or' - short-circuit evaluation [39m
+([96mdefmacro![39m [38;5;152mor[39m ([96mfn*[39m (a b)
+  `([96mlet*[39m (temp ~a)
+    ([96mif[39m temp temp ~b))))
+
+([38;5;152mprintln[39m [38;5;216m"\nor macro (with short-circuit):"[39m)
+([38;5;152mprintln[39m [38;5;216m"(or false true) =>"[39m ([38;5;152mor[39m [38;5;122mfalse[39m [38;5;122mtrue[39m))
+([38;5;152mprintln[39m [38;5;216m"(or 1 (/ 1 0)) =>"[39m ([38;5;152mor[39m [38;5;122m1[39m ([38;5;152m/[39m [38;5;122m1[39m [38;5;122m0[39m)))  [38;5;208m; Second arg not evaluated! [39m
+
+[38;5;208m; Macro for 'and' [39m
+([96mdefmacro![39m [38;5;152mand[39m ([96mfn*[39m (a b)
+  `([96mif[39m ~a ~b [38;5;122mfalse[39m)))
+
+([38;5;152mprintln[39m [38;5;216m"\nand macro:"[39m)
+([38;5;152mprintln[39m [38;5;216m"(and true true) =>"[39m ([38;5;152mand[39m [38;5;122mtrue[39m [38;5;122mtrue[39m))
+([38;5;152mprintln[39m [38;5;216m"(and true false) =>"[39m ([38;5;152mand[39m [38;5;122mtrue[39m [38;5;122mfalse[39m))
+([38;5;152mprintln[39m [38;5;216m"(and false (/ 1 0)) =>"[39m ([38;5;152mand[39m [38;5;122mfalse[39m ([38;5;152m/[39m [38;5;122m1[39m [38;5;122m0[39m)))  [38;5;208m; Second arg not evaluated! [39m
+
+[38;5;208m; Thread-first macro (like Clojure's ->) [39m
+([96mdefmacro![39m [38;5;117m->[39m ([96mfn*[39m (x form)
+  ([96mif[39m ([38;5;152mlist?[39m form)
+    `(~(car form) ~x ~@(cdr form))
+    ([38;5;152mlist[39m form x))))
+
+([38;5;152mprintln[39m [38;5;216m"\nthread-first macro:"[39m)
+([38;5;152mprintln[39m [38;5;216m"(-> 5 (+ 3)) =>"[39m (-> [38;5;122m5[39m ([38;5;152m+[39m [38;5;122m3[39m)))
+([38;5;152mprintln[39m [38;5;216m"(-> 5 (+ 3) (* 2)) =>"[39m
+  ([96mmacroexpand[39m (-> [38;5;122m5[39m ([38;5;152m+[39m [38;5;122m3[39m) ([38;5;152m*[39m [38;5;122m2[39m))))  [38;5;208m; Shows expansion [39m
+
+[38;5;208m; Debugging with macroexpand [39m
+([38;5;152mprintln[39m [38;5;216m"\nMacro expansion:"[39m)
+([38;5;152mprintln[39m [38;5;216m"(macroexpand '(unless false 1 2)) =>"[39m
+  ([96mmacroexpand[39m '(unless [38;5;122mfalse[39m [38;5;122m1[39m [38;5;122m2[39m)))
+([38;5;152mprintln[39m [38;5;216m"(macroexpand '(or x y)) =>"[39m
+  ([96mmacroexpand[39m '([38;5;152mor[39m x y)))
+
+[38;5;208m; Complex macro - cond [39m
+([96mdefmacro![39m [96mcond[39m ([96mfn*[39m (& clauses)
+  ([96mif[39m ([38;5;152mempty?[39m clauses)
+    [38;5;122mnil[39m
+    ([96mif[39m ([38;5;152m=[39m [38;5;122m1[39m ([38;5;152mcount[39m clauses))
+      (car clauses)
+      `([96mif[39m ~(car clauses)
+        ~(car (cdr clauses))
+        ([96mcond[39m ~@(cdr (cdr clauses))))))))
+
+([38;5;152mprintln[39m [38;5;216m"\ncond macro:"[39m)
+([96mdef![39m [38;5;117mx[39m [38;5;122m15[39m)
+[30m[48;5;250m-UU-:---  F1  [1mmacros.mal  [0m[30m[48;5;250m   Top   L1    Git-main  (MAL) -----------------------------------------------------------------------------------------------------------------------------------------------
+[39m[49mmacros.mal has auto save data; consider [38;5;152m[48;5;236mM-x recover-this-file[39m[49m
