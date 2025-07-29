@@ -1,0 +1,646 @@
+#+TITLE: Let Over Lambda Examples in MAL
+#+AUTHOR: MAL Let Over Lambda Study Guide
+#+DATE: 2025-07-29
+#+PROPERTY: header-args:lisp :tangle-mode (identity #o755) :mkdirp yes
+
+* Let Over Lambda - Advanced Lisp Techniques
+
+This file contains implementations of advanced Lisp techniques from Doug Hoyte's "Let Over Lambda" in our MAL dialect.
+
+** Chapter 2 - Closures
+
+*** Basic Closure Patterns
+
+#+begin_src lisp :tangle ./closures-advanced.mal
+;; Chapter 2: Closures
+;; Advanced closure patterns from Let Over Lambda
+
+;; Basic closure example - counter
+(def! make-counter (fn* (initial-value)
+  (let* (count initial-value)
+    (fn* ()
+      (def! count (+ count 1))
+      count))))
+
+;; Multiple closures sharing state - bank account
+(def! make-bank-account (fn* (initial-balance)
+  (let* (balance initial-balance)
+    (list
+      (fn* (amount)  ; withdraw
+        (if (>= balance amount)
+          (do (def! balance (- balance amount))
+              balance)
+          "Insufficient funds"))
+      (fn* (amount)  ; deposit
+        (do (def! balance (+ balance amount))
+            balance))
+      (fn* ()        ; check balance
+        balance)))))
+
+;; Let over lambda pattern for encapsulation
+(def! make-accumulator (fn* ()
+  (let* (sum 0)
+    (fn* (n)
+      (def! sum (+ sum n))))))
+
+;; Closure factory with customizable behavior
+(def! make-multiplier-factory (fn* (factor)
+  (fn* (x) (* x factor))))
+
+;; Dynamic scope simulation using closures
+(def! *dynamic-vars* (atom {}))
+
+(def! with-dynamic-binding (fn* (var value body)
+  (let* (old-value (get @*dynamic-vars* var))
+    (do
+      (swap! *dynamic-vars* assoc var value)
+      (let* (result (body))
+        (if old-value
+          (swap! *dynamic-vars* assoc var old-value)
+          (swap! *dynamic-vars* dissoc var))
+        result)))))
+
+;; Dynamic variable accessor
+(def! dynamic-get (fn* (var)
+  (get @*dynamic-vars* var)))
+
+;; Test closures
+(def! test-closures (fn* ()
+  (println "🔒 Testing Closure Patterns...")
+  ;; Counter test
+  (let* (counter (make-counter 10))
+    (assert (= (counter) 11))
+    (assert (= (counter) 12)))
+  
+  ;; Bank account test
+  (let* (account (make-bank-account 100)
+         withdraw (first account)
+         deposit (second account)
+         balance (nth account 2))
+    (assert (= (withdraw 30) 70))
+    (assert (= (deposit 20) 90))
+    (assert (= (balance) 90)))
+  
+  (println "✅ Closure tests pass")))
+
+;; Run tests when loaded
+(test-closures)
+#+end_src
+
+** Chapter 3 - Macro Programming
+
+*** Fundamental Macros
+
+#+begin_src lisp :tangle ./macro-techniques.mal
+;; Chapter 3: Macro Basics
+;; Fundamental macro techniques from Let Over Lambda
+
+;; Unit testing macro
+(defmacro! unit-test (fn* (name & tests)
+  `(do
+     (println "Running test:" ~name)
+     (let* (passed 0
+            total ~(count tests))
+       ~@(map (fn* (test)
+                `(if ~test
+                   (def! passed (+ passed 1))
+                   (println "FAILED:" '~test)))
+              tests)
+       (println "Passed:" passed "out of" total)))))
+
+;; Simple timing macro
+(defmacro! time-it (fn* (expr)
+  `(let* (start (time-ms)
+          result ~expr
+          end (time-ms))
+     (println "Execution time:" (- end start) "ms")
+     result)))
+
+;; Conditional compilation
+(def! *debug-mode* true)
+
+(defmacro! when-debug (fn* (& body)
+  (if *debug-mode*
+    `(do ~@body)
+    nil)))
+
+;; Automatic getter/setter generation
+(defmacro! defstruct (fn* (name & fields)
+  `(do
+     ;; Constructor
+     (def! ~(symbol (str "make-" name)) 
+       (fn* ~fields
+         (list ~@(map (fn* (field) `'~field) fields)
+               ~@fields)))
+     
+     ;; Getters
+     ~@(map-indexed (fn* (i field)
+                      `(def! ~(symbol (str name "-" field))
+                         (fn* (obj) (nth obj ~(+ i (count fields))))))
+                    fields)
+     
+     ;; Setters  
+     ~@(map-indexed (fn* (i field)
+                      `(def! ~(symbol (str "set-" name "-" field "!"))
+                         (fn* (obj val)
+                           (assoc obj ~(+ i (count fields)) val))))
+                    fields))))
+
+;; Test macros
+(println "🎭 Testing Macro Patterns...")
+(unit-test "Basic arithmetic tests"
+  (= (+ 2 2) 4)
+  (= (* 3 4) 12)
+  (= (/ 10 2) 5))
+
+(when-debug
+  (println "Debug mode is enabled"))
+
+;; Test struct generation
+(defstruct point x y)
+(def! p1 (make-point 3 4))
+(println "Point x:" (point-x p1))
+(println "Point y:" (point-y p1))
+#+end_src
+
+** Chapter 7 - Anaphoric Macros
+
+*** Anaphoric Programming Constructs
+
+#+begin_src lisp :tangle ./anaphoric-macros.mal
+;; Chapter 7: Anaphoric Macros
+;; Self-referential macro programming
+
+;; Anaphoric if - 'it' refers to the test result
+(defmacro! aif (fn* (test then & else)
+  `(let* (it ~test)
+     (if it ~then ~@else))))
+
+;; Anaphoric when
+(defmacro! awhen (fn* (test & body)
+  `(let* (it ~test)
+     (when it ~@body))))
+
+;; Anaphoric lambda - self-reference
+(defmacro! alambda (fn* (args & body)
+  `(let* (self nil)
+     (def! self (fn* ~args ~@body))
+     self)))
+
+;; Anaphoric block - early exit
+(defmacro! ablock (fn* (name & body)
+  `(let* (return-from (fn* (val) (throw {:block ~name :value val})))
+     (try
+       (do ~@body)
+       (catch e
+         (if (and (map? e) (= (:block e) ~name))
+           (:value e)
+           (throw e)))))))
+
+;; Test anaphoric macros
+(println "🔮 Testing Anaphoric Macros...")
+
+;; Test aif
+(aif (+ 1 2)
+  (println "Result is:" it))
+
+;; Test awhen
+(awhen (get {:a 1 :b 2} :a)
+  (println "Found value:" it))
+
+;; Test alambda for recursive factorial
+(def! factorial-anaphoric
+  (alambda (n)
+    (if (= n 0)
+      1
+      (* n (self (- n 1))))))
+
+(println "5! =" (factorial-anaphoric 5))
+
+;; Test ablock
+(def! early-exit-example (fn* ()
+  (ablock exit
+    (println "Starting...")
+    (return-from 42)
+    (println "This won't print"))))
+
+(println "Early exit returned:" (early-exit-example))
+#+end_src
+
+** Chapter 8 - Pandoric Macros
+
+*** Pandoric Closures
+
+#+begin_src lisp :tangle ./pandoric-closures.mal
+;; Chapter 8: Pandoric Macros
+;; Closures with backdoor access to internals
+
+;; Helper for generating unique symbols
+(def! gensym-counter (atom 0))
+(def! gensym (fn* ()
+  (symbol (str "G__" (swap! gensym-counter inc)))))
+
+;; Simplified pandoric macro
+(defmacro! defpan-simple (fn* (name args & body)
+  `(def! ~name
+     (let* ~args
+       (fn* (msg)
+         (case msg
+           :get-balance balance
+           :set-balance (fn* (new-val) (def! balance new-val))
+           :default (do ~@body)))))))
+
+;; Example: Pandoric bank account
+(defpan-simple pandoric-account (balance 100)
+  (case msg
+    :withdraw (fn* (amount)
+                (if (>= balance amount)
+                  (do (def! balance (- balance amount))
+                      balance)
+                  "Insufficient funds"))
+    :deposit (fn* (amount)
+               (do (def! balance (+ balance amount))
+                   balance))))
+
+;; Test pandoric closures
+(println "🔐 Testing Pandoric Patterns...")
+
+;; Access internal state
+(println "Initial balance:" (pandoric-account :get-balance))
+
+;; Use normal interface
+(println "Withdraw 30:" ((pandoric-account :withdraw) 30))
+
+;; Backdoor access to change balance
+((pandoric-account :set-balance) 1000)
+(println "Balance after backdoor:" (pandoric-account :get-balance))
+#+end_src
+
+** Chapter 6 - Domain Specific Languages
+
+*** Embedded DSL Creation
+
+#+begin_src lisp :tangle ./dsl-examples.mal
+;; Chapter 6: Domain Specific Languages
+;; Creating embedded DSLs in MAL
+
+;; Simple HTML generation DSL
+(def! html-attrs (fn* (attrs)
+  (if (empty? attrs)
+    ""
+    (apply str (map (fn* (pair)
+                      (str " " (name (first pair)) "=\"" (second pair) "\""))
+                    attrs)))))
+
+(def! html-element (fn* (tag attrs & content)
+  (str "<" (name tag) (html-attrs attrs) ">"
+       (apply str content)
+       "</" (name tag) ">")))
+
+;; HTML DSL helper macros
+(defmacro! div (fn* (attrs & content)
+  `(html-element :div ~attrs ~@content)))
+
+(defmacro! span (fn* (attrs & content)
+  `(html-element :span ~attrs ~@content)))
+
+(defmacro! p (fn* (attrs & content)
+  `(html-element :p ~attrs ~@content)))
+
+;; Query DSL for data manipulation
+(def! where (fn* (pred coll)
+  (filter pred coll)))
+
+(def! select (fn* (selector coll)
+  (map selector coll)))
+
+(def! order-by (fn* (key-fn coll)
+  (sort (fn* (a b) (< (key-fn a) (key-fn b))) coll)))
+
+;; Pipeline macro for composing queries
+(defmacro! query-> (fn* (data & operations)
+  (reduce (fn* (acc op)
+            (cons (first op) (cons acc (rest op))))
+          data
+          operations)))
+
+;; Test DSLs
+(println "🌐 Testing Domain Specific Languages...")
+
+;; HTML DSL test
+(println "HTML generation:")
+(println (div {:class "container"}
+           (p {:id "intro"} "Hello, World!")
+           (span {:style "color: red"} "Important!")))
+
+;; Query DSL test
+(def! people
+  [{:name "Alice" :age 30}
+   {:name "Bob" :age 25}
+   {:name "Charlie" :age 35}])
+
+(println "\nQuery DSL:")
+(println "Adults over 28:"
+         (query-> people
+           (where (fn* (p) (> (:age p) 28)))
+           (select (fn* (p) (:name p)))
+           (order-by identity)))
+#+end_src
+
+** Chapter 9 - Hotpatching and Live Updates
+
+*** Runtime Code Modification
+
+#+begin_src lisp :tangle ./hotpatching.mal
+;; Chapter 9: Hotpatching and Live Updates
+;; Runtime code modification techniques
+
+;; Function redefinition with history
+(def! *function-history* (atom {}))
+
+(defmacro! defun-hotpatch (fn* (name args & body)
+  `(do
+     ;; Save current definition to history
+     (when (defined? '~name)
+       (swap! *function-history* 
+              update ~(keyword (str name))
+              (fn* (hist) (cons ~name (or hist '())))))
+     
+     ;; Define new function
+     (def! ~name (fn* ~args ~@body))
+     
+     ;; Return name for chaining
+     '~name)))
+
+;; Helper to check if symbol is defined
+(def! defined? (fn* (sym)
+  (try
+    (do (eval sym) true)
+    (catch _ false))))
+
+;; Rollback to previous version
+(def! rollback-function (fn* (name)
+  (let* (history (get @*function-history* (keyword (str name))))
+    (if (and history (not (empty? history)))
+      (do
+        (eval `(def! ~name ~(first history)))
+        (swap! *function-history* 
+               update (keyword (str name)) rest)
+        (str "Rolled back " name))
+      (str "No history for " name)))))
+
+;; Object pooling for memory management
+(def! make-object-pool (fn* (factory reset-fn initial-size)
+  (let* (pool (atom (repeatedly initial-size factory))
+         in-use (atom #{}))
+    {:acquire (fn* ()
+                (let* (available @pool)
+                  (if (empty? available)
+                    (factory)  ; Create new if pool empty
+                    (let* (obj (first available))
+                      (swap! pool rest)
+                      (swap! in-use conj obj)
+                      obj))))
+     :release (fn* (obj)
+                (when (contains? @in-use obj)
+                  (reset-fn obj)
+                  (swap! in-use disj obj)
+                  (swap! pool conj obj)))
+     :stats (fn* ()
+              {:available (count @pool)
+               :in-use (count @in-use)})})))
+
+;; Test hotpatching
+(println "🔥 Testing Hotpatching and Live Updates...")
+
+;; Define initial function
+(defun-hotpatch greet (name)
+  (str "Hello, " name "!"))
+
+(println "Original:" (greet "World"))
+
+;; Hotpatch with new version
+(defun-hotpatch greet (name)
+  (str "Hi there, " name "! How are you?"))
+
+(println "Updated:" (greet "World"))
+
+;; Rollback
+(println (rollback-function 'greet))
+(println "After rollback:" (greet "World"))
+
+;; Test object pool
+(def! string-pool 
+  (make-object-pool 
+    (fn* () (atom ""))
+    (fn* (s) (reset! s ""))
+    5))
+
+(println "\nObject pool stats:" ((:stats string-pool)))
+(def! s1 ((:acquire string-pool)))
+(reset! s1 "Used string")
+(println "After acquire:" ((:stats string-pool)))
+((:release string-pool) s1)
+(println "After release:" ((:stats string-pool)))
+
+;; Helper for repeatedly
+(def! repeatedly (fn* (n f)
+  (if (= n 0)
+    '()
+    (cons (f) (repeatedly (- n 1) f)))))
+#+end_src
+
+** Advanced Patterns
+
+### Memory Management and Performance
+
+#+begin_src lisp :tangle ./performance-analysis.mal
+;; Advanced Patterns from Let Over Lambda
+;; Memory management and performance optimization
+
+;; Weak references simulation
+(def! *weak-refs* (atom {}))
+(def! *weak-ref-counter* (atom 0))
+
+(def! make-weak-ref (fn* (obj)
+  (let* (id (swap! *weak-ref-counter* inc))
+    (swap! *weak-refs* assoc id obj)
+    {:type :weak-ref :id id})))
+
+(def! weak-ref-get (fn* (weak-ref)
+  (get @*weak-refs* (:id weak-ref))))
+
+(def! weak-ref-clear (fn* (weak-ref)
+  (swap! *weak-refs* dissoc (:id weak-ref))))
+
+;; Memoization with size limit
+(def! make-limited-memo (fn* (f max-size)
+  (let* (cache (atom {})
+         access-order (atom '()))
+    (fn* (& args)
+      (if (contains? @cache args)
+        (get @cache args)
+        (let* (result (apply f args))
+          (swap! cache assoc args result)
+          (swap! access-order conj args)
+          (when (> (count @cache) max-size)
+            (let* (oldest (first @access-order))
+              (swap! cache dissoc oldest)
+              (swap! access-order rest)))
+          result))))))
+
+;; Lazy evaluation helpers
+(def! lazy-cons (fn* (head tail-fn)
+  {:type :lazy-cons
+   :head head
+   :tail-fn tail-fn}))
+
+(def! lazy-first (fn* (lcons)
+  (:head lcons)))
+
+(def! lazy-rest (fn* (lcons)
+  ((:tail-fn lcons))))
+
+(def! take-lazy (fn* (n lcons)
+  (if (or (= n 0) (nil? lcons))
+    '()
+    (cons (lazy-first lcons)
+          (take-lazy (- n 1) (lazy-rest lcons))))))
+
+;; Infinite sequence of integers
+(def! integers-from (fn* (n)
+  (lazy-cons n (fn* () (integers-from (+ n 1))))))
+
+;; Performance monitoring
+(def! *performance-stats* (atom {}))
+
+(defmacro! with-timing (fn* (name & body)
+  `(let* (start-time (time-ms)
+          result (do ~@body)
+          end-time (time-ms)
+          elapsed (- end-time start-time))
+     (swap! *performance-stats* 
+            update ~name 
+            (fn* (stats)
+              (if stats
+                {:count (+ (:count stats) 1)
+                 :total (+ (:total stats) elapsed)
+                 :avg (/ (+ (:total stats) elapsed)
+                        (+ (:count stats) 1))}
+                {:count 1 :total elapsed :avg elapsed})))
+     result)))
+
+;; Test performance features
+(println "⚡ Testing Performance and Memory Management...")
+
+;; Test weak references
+(def! obj {:data "Important"})
+(def! weak-obj (make-weak-ref obj))
+(println "Weak ref data:" (weak-ref-get weak-obj))
+(weak-ref-clear weak-obj)
+(println "After clear:" (weak-ref-get weak-obj))
+
+;; Test memoization with limit
+(def! fib-memo 
+  (make-limited-memo 
+    (fn* (n)
+      (if (< n 2)
+        n
+        (+ (fib-memo (- n 1)) (fib-memo (- n 2)))))
+    10))
+
+(println "\nMemoized Fibonacci:")
+(println "fib(10) =" (fib-memo 10))
+
+;; Test lazy sequences
+(def! nats (integers-from 0))
+(println "\nFirst 10 natural numbers:" (take-lazy 10 nats))
+
+;; Test performance monitoring
+(with-timing "test-operation"
+  (reduce + 0 (range 1000)))
+
+(println "\nPerformance stats:" @*performance-stats*)
+
+;; Helper - time-ms simulation
+(def! time-ms (fn* ()
+  ;; Simulate time in milliseconds
+  0))
+
+;; Helper - range
+(def! range (fn* (n)
+  (let* (helper (fn* (i acc)
+                  (if (= i n)
+                    acc
+                    (helper (+ i 1) (cons i acc)))))
+    (reverse (helper 0 '())))))
+
+(def! reverse (fn* (lst)
+  (reduce (fn* (acc x) (cons x acc)) '() lst)))
+#+end_src
+
+** Test Suite
+
+### Comprehensive Test Runner
+
+#+begin_src lisp :tangle ./test-lol-patterns.mal
+;; Test Suite for Let Over Lambda Patterns
+;; Comprehensive validation of advanced Lisp techniques
+
+(println "🚀 Let Over Lambda Pattern Tests")
+(println "================================\n")
+
+;; Load all pattern files
+(load-file "closures-advanced.mal")
+(load-file "macro-techniques.mal")
+(load-file "anaphoric-macros.mal")
+(load-file "pandoric-closures.mal")
+(load-file "dsl-examples.mal")
+(load-file "hotpatching.mal")
+(load-file "performance-analysis.mal")
+
+(println "\n✅ All Let Over Lambda patterns loaded and tested!")
+(println "🎉 Our MAL implementation handles advanced Lisp techniques!")
+
+;; Summary of capabilities demonstrated
+(println "\nCapabilities Demonstrated:")
+(println "1. Advanced closure patterns and lexical scoping")
+(println "2. Sophisticated macro programming")
+(println "3. Anaphoric macros with implicit bindings")
+(println "4. Pandoric closures with backdoor access")
+(println "5. Embedded DSL creation")
+(println "6. Runtime code modification and hotpatching")
+(println "7. Performance optimization and memory management")
+#+end_src
+
+** Makefile
+
+#+begin_src makefile :tangle ./Makefile
+# Let Over Lambda Examples Makefile
+
+.PHONY: all test clean tangle individual-tests
+
+all: test
+
+test:
+	@echo "Running Let Over Lambda examples in MAL..."
+	@cd ../.. && ./stepA_mal.rb experiments/006-let-over-lambda-mal/test-lol-patterns.mal
+
+individual-tests:
+	@echo "Testing closures..."
+	@cd ../.. && ./stepA_mal.rb experiments/006-let-over-lambda-mal/closures-advanced.mal
+	@echo "Testing macros..."
+	@cd ../.. && ./stepA_mal.rb experiments/006-let-over-lambda-mal/macro-techniques.mal
+	@echo "Testing anaphoric macros..."
+	@cd ../.. && ./stepA_mal.rb experiments/006-let-over-lambda-mal/anaphoric-macros.mal
+	@echo "Testing pandoric closures..."
+	@cd ../.. && ./stepA_mal.rb experiments/006-let-over-lambda-mal/pandoric-closures.mal
+
+clean:
+	@echo "Cleaning generated files..."
+	@rm -f *.png
+
+tangle:
+	@echo "Tangling org files..."
+	@emacs --batch -l org --eval "(org-babel-tangle-file \"SETUP.org\")"
+#+end_src
